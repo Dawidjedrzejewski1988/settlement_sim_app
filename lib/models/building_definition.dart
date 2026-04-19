@@ -1,5 +1,5 @@
 class BuildingDefinition {
-  final int type;
+  final String type;
   final String name;
   final String assetPath;
   final Map<String, int> cost;

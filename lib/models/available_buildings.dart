@@ -1,7 +1,7 @@
 import 'resource.dart';
 
 class AvailableBuilding {
-  final int type;
+  final String type;
   final String? name;
   final int tier;
   final bool canBuild;
@@ -38,7 +38,7 @@ class AvailableBuilding {
     final inputJson = json['input'] as List<dynamic>? ?? [];
 
     return AvailableBuilding(
-      type: json['type'] ?? 0,
+      type: json['type']?.toString() ?? "",
       name: json['name']?.toString(),
       tier: json['tier'] ?? 0,
       canBuild: json['canBuild'] ?? false,
@@ -48,7 +48,7 @@ class AvailableBuilding {
       producedResource: json['producedResource'] != null
           ? Resource.fromJson(json['producedResource'])
           : null,
-      productionPerTick: (json['productionPerTick'] as num?)?.toDouble() ?? 0.0,
+      productionPerTick: (json['productionPerHour'] as num?)?.toDouble() ?? 0.0,
       maxWorkers: json['maxWorkers'] ?? 0,
       storageCapacity: json['storageCapacity'] ?? 0,
       housing: json['housing'] ?? 0,

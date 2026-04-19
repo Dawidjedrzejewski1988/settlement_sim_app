@@ -1,6 +1,6 @@
 class Building {
   final String id;
-  final int type;
+  final String type;
   final int level;
   final int workers;
   final int tileX;
@@ -20,7 +20,7 @@ class Building {
   factory Building.fromJson(Map<String, dynamic> json) {
     return Building(
       id: json['id']?.toString() ?? '',
-      type: (json['type'] as num?)?.toInt() ?? 0,
+      type: json['type']?.toString() ?? "",
       level: (json['level'] as num?)?.toInt() ?? 1,
       workers: (json['workers'] as num?)?.toInt() ?? 0,
       maxWorkers: (json['maxWorkers'] as num?)?.toInt() ?? 0,

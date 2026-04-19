@@ -61,31 +61,29 @@ class SessionService {
     return data.map((e) => Building.fromJson(e)).toList();
   }
 
-  // KLUCZOWA ZMIANA: Zgodność z BuildRequest z OpenAPI
-  Future<void> buildBuilding(int buildingType, int x, int y) async {
+  Future<void> buildBuilding(String type, int x, int y) async {
     final response = await http.post(
       Uri.parse("$baseUrl/api/buildings"),
       headers: await _authHeaders(withJson: true),
       body: jsonEncode({
-        "type": buildingType,
+        "type": type,
         "tileX": x,
         "tileY": y,
       }),
     );
 
     if (response.statusCode != 200 && response.statusCode != 201) {
-      print("Błąd budowania: ${response.body}"); // Log dla Ciebie
+      print("Błąd budowania: ${response.body}");
       throw Exception(_parseError(response.body));
     }
   }
 
-  // KLUCZOWA ZMIANA: Wysyłanie surowej liczby (Integer) zamiast obiektu JSON
   Future<void> updateWorkers(String buildingId, int workers) async {
     final response = await http.patch(
       Uri.parse("$baseUrl/api/buildings/$buildingId/workers"),
       headers: await _authHeaders(withJson: true),
       body:
-          workers.toString(), // W C# Integer w body często idzie jako raw text
+          workers.toString(),
     );
 
     if (response.statusCode != 200) throw Exception(_parseError(response.body));

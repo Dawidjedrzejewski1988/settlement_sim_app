@@ -233,7 +233,7 @@ class _GameScreenState extends State<GameScreen> {
     _showBuildMenuAt(gridX, gridY);
   }
 
-  Future<void> buildAt(int type, int x, int y) async {
+  Future<void> buildAt(String type, int x, int y) async {
     try {
       await service.buildBuilding(type, x, y);
 
@@ -600,7 +600,7 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  String _getName(int t) {
+  String _getName(String t) {
     final def = buildingDefinitions.firstWhere(
       (d) => d.type == t,
       orElse: () => buildingDefinitions.first,

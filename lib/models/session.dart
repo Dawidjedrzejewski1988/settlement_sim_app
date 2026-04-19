@@ -3,7 +3,7 @@ class Session {
   final String? name;
   final int playerCount;
   final DateTime? createdAt;
-  final int? status;
+  final String? status;
 
   Session({
     required this.id,
@@ -21,7 +21,7 @@ class Session {
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'].toString())
           : null,
-      status: (json['status'] as num?)?.toInt(),
+      status: json['status']?.toString(),
     );
   }
 }
