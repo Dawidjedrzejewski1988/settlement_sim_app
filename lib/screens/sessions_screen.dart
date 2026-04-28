@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import '../api/session_service.dart';
-import '../api/token_storage.dart';
-import '../screens/game_screen.dart';
-import '../models/session.dart';
+import '../models/session_model.dart';
+import '../services/session_service.dart';
+import 'game_screen.dart';
 
 class SessionsScreen extends StatefulWidget {
   const SessionsScreen({super.key});
@@ -12,140 +11,138 @@ class SessionsScreen extends StatefulWidget {
 }
 
 class _SessionsScreenState extends State<SessionsScreen> {
-  final service = SessionService();
+  final SessionService service = SessionService();
+  final TextEditingController controller = TextEditingController();
 
-  List<Session> sessions = [];
-  bool isLoading = true;
-  String error = "";
+  List<SessionModel> sessions = [];
+  bool loading = true;
 
   @override
   void initState() {
     super.initState();
-    load();
+    loadSessions();
   }
 
-  Future<void> load() async {
-    setState(() {
-      isLoading = true;
-      error = "";
-    });
+  Future<void> loadSessions() async {
+    try {
+      setState(() => loading = true);
+
+      final response = await service.getSessions();
+
+      sessions =
+          (response.data as List).map((e) => SessionModel.fromJson(e)).toList();
+    } catch (e) {
+      debugPrint("SESSION ERROR: $e");
+    }
+
+    setState(() => loading = false);
+  }
+
+  Future<void> createSession() async {
+    if (controller.text.trim().isEmpty) return;
 
     try {
-      final data = await service.getSessions();
-
-      if (!mounted) return;
-
-      setState(() {
-        sessions = data;
-        isLoading = false;
-      });
+      await service.createSession(controller.text.trim());
+      controller.clear();
+      loadSessions();
     } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        error = e.toString().replaceAll("Exception: ", "");
-        isLoading = false;
-      });
+      debugPrint("CREATE SESSION ERROR: $e");
     }
   }
 
-  Future<void> join(String sessionId) async {
-    if (isLoading) return;
-
-    setState(() => isLoading = true);
-
+  Future<void> joinSession(String id) async {
     try {
-      final token = await service.joinSession(sessionId);
+      final response = await service.joinSession(id);
 
-      await TokenStorage.saveToken(token);
+      final accessToken = response.data["accessToken"];
+      final settlementId = response.data["settlementId"];
 
-      if (!mounted) return;
-
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => GameScreen(token: token, sessionId: sessionId),
+          builder: (_) => GameScreen(
+            token: accessToken,
+            settlementId: settlementId,
+          ),
         ),
       );
     } catch (e) {
-      if (!mounted) return;
-
-      setState(() => isLoading = false);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll("Exception: ", ""))),
-      );
+      debugPrint("JOIN ERROR: $e");
     }
   }
 
-  Widget _sessionCard(Session s) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      color: Colors.black.withOpacity(0.6),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Colors.amber),
-      ),
-      child: ListTile(
-        title: Text(
-          s.name ?? "Brak nazwy",
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        subtitle: Text(
-          "Graczy: ${s.playerCount}",
-          style: const TextStyle(color: Colors.white70),
-        ),
-        trailing: ElevatedButton(
-          onPressed: () => join(s.id),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.amber,
-            foregroundColor: Colors.black,
-          ),
-          child: const Text("Dołącz"),
-        ),
-      ),
-    );
+  Future<void> deleteSession(String id) async {
+    try {
+      await service.deleteSession(id);
+      loadSessions();
+    } catch (e) {
+      debugPrint("DELETE ERROR: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
-        title: const Text("Wybierz serwer"),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.amber,
-        actions: [IconButton(icon: const Icon(Icons.refresh), onPressed: load)],
+        title: const Text("Sesje Gry"),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.amber))
-          : error.isNotEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  error,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.red),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    decoration: const InputDecoration(
+                      hintText: "Nazwa sesji",
+                    ),
+                  ),
                 ),
-              ),
-            )
-          : sessions.isEmpty
-          ? const Center(
-              child: Text(
-                "Brak dostępnych sesji",
-                style: TextStyle(color: Colors.white70),
-              ),
-            )
-          : ListView.builder(
-              itemCount: sessions.length,
-              itemBuilder: (context, index) {
-                return _sessionCard(sessions[index]);
-              },
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: createSession,
+                  child: const Text("Utwórz"),
+                ),
+              ],
             ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      itemCount: sessions.length,
+                      itemBuilder: (context, index) {
+                        final s = sessions[index];
+
+                        return Card(
+                          child: ListTile(
+                            title: Text(s.name),
+                            subtitle: Text(
+                              "Graczy: ${s.playerCount} | ${s.status}",
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () => joinSession(s.id),
+                                  child: const Text("Dołącz"),
+                                ),
+                                IconButton(
+                                  onPressed: () => deleteSession(s.id),
+                                  icon: const Icon(Icons.delete),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

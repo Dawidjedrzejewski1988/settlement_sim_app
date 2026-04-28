@@ -1,18 +1,14 @@
+import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+
+import 'providers/auth_provider.dart';
 import 'screens/splash_screen.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Włączenie pełnego ekranu (ukrycie pasków systemowych)
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
-  // Opcjonalnie: wymuszenie orientacji poziomej (landscape)
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
-  ]);
+  Flame.images.prefix = 'assets/';
 
   runApp(const SettlementSimApp());
 }
@@ -22,16 +18,18 @@ class SettlementSimApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Settlement Sim',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.amber,
-        scaffoldBackgroundColor: Colors.black,
-        useMaterial3: true,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(),
+        ),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Settlement Sim',
+        theme: ThemeData.dark(),
+        home: const SplashScreen(),
       ),
-      // TUTAJ ZMIANA: Aplikacja teraz ładuje SplashScreen zamiast zwykłego tekstu!
-      home: const SplashScreen(),
     );
   }
 }

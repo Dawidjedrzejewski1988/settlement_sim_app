@@ -1,4 +1,4 @@
-# settlement_sim_app
+# settlement_sim
 
 A new Flutter project.
 

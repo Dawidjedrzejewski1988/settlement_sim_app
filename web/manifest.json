@@ -1,6 +1,6 @@
 {
-    "name": "settlement_sim_app",
-    "short_name": "settlement_sim_app",
+    "name": "settlement_sim",
+    "short_name": "settlement_sim",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

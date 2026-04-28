@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "settlement_sim_app" "\0"
+            VALUE "CompanyName", "com.settlementsim" "\0"
+            VALUE "FileDescription", "settlement_sim" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "settlement_sim_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "settlement_sim_app.exe" "\0"
-            VALUE "ProductName", "settlement_sim_app" "\0"
+            VALUE "InternalName", "settlement_sim" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.settlementsim. All rights reserved." "\0"
+            VALUE "OriginalFilename", "settlement_sim.exe" "\0"
+            VALUE "ProductName", "settlement_sim" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

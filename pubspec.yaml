@@ -1,7 +1,6 @@
-name: settlement_sim_app
+name: settlement_sim
 description: A new Flutter project.
-publish_to: "none"
-
+publish_to: none
 version: 1.0.0+1
 
 environment:
@@ -10,19 +9,28 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^1.2.0
+
+  flame: ^1.18.0
+  http: ^1.2.1
+  dio: ^5.4.0
   shared_preferences: ^2.2.2
-  signalr_netcore: ^1.3.6
-  cupertino_icons: ^1.0.8
+  json_annotation: ^4.8.1
+  provider: ^6.1.1
+  flutter_secure_storage: ^9.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
+
+  build_runner: ^2.4.8
+  json_serializable: ^6.7.1
 
 flutter:
   uses-material-design: true
+
   assets:
-    - assets/logo/
-    - assets/buildings/tier0/
-    - assets/buildings/tier1/
+    - assets/ui/
+    - assets/tiles/
+    - assets/buildings/
+    - assets/icons/
+    - assets/npc/
