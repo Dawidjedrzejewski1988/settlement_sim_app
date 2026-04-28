@@ -40,7 +40,7 @@ Future<bool?> showBuildConfirmDialog({
   return showDialog<bool>(
     context: context,
     barrierDismissible: true,
-    barrierColor: Colors.black.withOpacity(0.45),
+    barrierColor: Colors.black.withValues(alpha: 0.45),
     builder: (_) {
       return Dialog(
         backgroundColor: Colors.transparent,

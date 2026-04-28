@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../ui/ui_system.dart';
 import '../game/data/building_definitions.dart';
 
-class BuildingSidePanel extends StatelessWidget {
+class BuildingSidePanel extends StatefulWidget {
   final Map building;
   final int timer;
 
@@ -23,8 +23,21 @@ class BuildingSidePanel extends StatelessWidget {
     required this.onSetWorkers,
   });
 
+  @override
+  State<BuildingSidePanel> createState() => _BuildingSidePanelState();
+}
+
+class _BuildingSidePanelState extends State<BuildingSidePanel> {
+  late int workers;
+
+  @override
+  void initState() {
+    super.initState();
+    workers = widget.building["workers"] ?? 0;
+  }
+
   String icon() {
-    switch (building["type"]) {
+    switch (widget.building["type"]) {
       case "House":
         return "🏠";
       case "Cottage":
@@ -57,8 +70,7 @@ class BuildingSidePanel extends StatelessWidget {
   }
 
   bool busy() {
-    final s = building["status"].toString();
-
+    final s = widget.building["status"].toString();
     return s == "Constructing" || s == "Upgrading";
   }
 
@@ -72,28 +84,18 @@ class BuildingSidePanel extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              left,
-              style: UiText.body(),
-            ),
+            child: Text(left, style: UiText.body()),
           ),
-          Text(
-            right,
-            style: UiText.value(
-              color: color,
-            ),
-          ),
+          Text(right, style: UiText.value(color: color)),
         ],
       ),
     );
   }
 
   Widget progressBar() {
-    if (timer <= 0) {
-      return const SizedBox();
-    }
+    if (widget.timer <= 0) return const SizedBox();
 
-    final value = (1 - (timer / 60)).clamp(0, 1).toDouble();
+    final value = (1 - (widget.timer / 60)).clamp(0, 1).toDouble();
 
     return Column(
       children: [
@@ -104,16 +106,11 @@ class BuildingSidePanel extends StatelessWidget {
             value: value,
             minHeight: 12,
             backgroundColor: Colors.black38,
-            valueColor: const AlwaysStoppedAnimation(
-              UiColors.gold,
-            ),
+            valueColor: const AlwaysStoppedAnimation(UiColors.gold),
           ),
         ),
         const SizedBox(height: 6),
-        Text(
-          "$timer s",
-          style: UiText.body(),
-        ),
+        Text("${widget.timer} s", style: UiText.body()),
       ],
     );
   }
@@ -137,21 +134,18 @@ class BuildingSidePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final workers = building["workers"] ?? 0;
-    final maxWorkers = building["maxWorkers"] ?? 0;
-    final production = building["productionPerHour"] ?? 0;
-    final morale = building["moraleBonus"] ?? 0;
-    final storage = building["storageCapacity"] ?? 0;
-    final housing = building["housing"] ?? 0;
-    final maintenance = building["maintenanceCost"] ?? 0;
-    final tileX = building["tileX"] ?? 0;
-    final tileY = building["tileY"] ?? 0;
+    final maxWorkers = widget.building["maxWorkers"] ?? 0;
+    final production = widget.building["productionPerHour"] ?? 0;
+    final morale = widget.building["moraleBonus"] ?? 0;
+    final storage = widget.building["storageCapacity"] ?? 0;
+    final housing = widget.building["housing"] ?? 0;
+    final maintenance = widget.building["maintenanceCost"] ?? 0;
+    final tileX = widget.building["tileX"] ?? 0;
+    final tileY = widget.building["tileY"] ?? 0;
 
-    final produced = building["producedResource"]?["name"] ?? "-";
+    final produced = widget.building["producedResource"]?["name"] ?? "-";
 
-    final def = BuildingDefinitions.get(
-      building["type"],
-    );
+    final def = BuildingDefinitions.get(widget.building["type"]);
 
     return Positioned(
       top: 10,
@@ -162,10 +156,7 @@ class BuildingSidePanel extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(26),
-            border: Border.all(
-              color: UiColors.gold,
-              width: 2,
-            ),
+            border: Border.all(color: UiColors.gold, width: 2),
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -192,79 +183,60 @@ class BuildingSidePanel extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        "${icon()} ${building["name"]}",
-                        style: UiText.title(
-                          size: 30,
-                        ),
+                        "${icon()} ${widget.building["name"]}",
+                        style: UiText.title(size: 30),
                       ),
                     ),
                     IconButton(
-                      onPressed: onClose,
-                      icon: const Icon(
-                        Icons.close,
-                        color: Colors.white,
-                      ),
+                      onPressed: widget.onClose,
+                      icon: const Icon(Icons.close, color: Colors.white),
                     ),
                   ],
                 ),
                 Text(
-                  building["status"].toString(),
+                  widget.building["status"].toString(),
                   style: UiText.body(
-                    color: busy() ? Colors.orangeAccent : Colors.greenAccent,
+                    color: busy()
+                        ? Colors.orangeAccent
+                        : Colors.greenAccent,
                   ),
                 ),
                 progressBar(),
                 const SizedBox(height: 18),
+
                 Container(
                   height: 120,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.18),
+                    color: Colors.black.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: Colors.white12,
-                    ),
+                    border: Border.all(color: Colors.white12),
                   ),
                   child: Center(
-                    child: Text(
-                      icon(),
-                      style: const TextStyle(
-                        fontSize: 56,
-                      ),
-                    ),
+                    child: Text(icon(), style: const TextStyle(fontSize: 56)),
                   ),
                 ),
+
                 const SizedBox(height: 18),
+
                 rowStat("📍 Pozycja", "$tileX,$tileY"),
                 rowStat("📐 Rozmiar", "${def.width}x${def.height}"),
                 rowStat("👷 Robotnicy", "$workers / $maxWorkers"),
-                rowStat(
-                  "⚙ Produkcja/h",
-                  "$production",
-                  color: Colors.greenAccent,
-                ),
+
+                rowStat("⚙ Produkcja/h", "$production",
+                    color: Colors.greenAccent),
+
                 rowStat("📦 Produkt", produced),
-                if (housing > 0)
-                  rowStat(
-                    "🏠 Mieszkania",
-                    "+$housing",
-                  ),
-                if (storage > 0)
-                  rowStat(
-                    "📦 Magazyn",
-                    "+$storage",
-                  ),
-                if (morale > 0)
-                  rowStat(
-                    "😊 Morale",
-                    "+$morale",
-                  ),
-                rowStat(
-                  "💰 Utrzymanie",
-                  "$maintenance/h",
-                  color: Colors.redAccent,
-                ),
+
+                if (housing > 0) rowStat("🏠 Mieszkania", "+$housing"),
+                if (storage > 0) rowStat("📦 Magazyn", "+$storage"),
+                if (morale > 0) rowStat("😊 Morale", "+$morale"),
+
+                rowStat("💰 Utrzymanie", "$maintenance/h",
+                    color: Colors.redAccent),
+
                 const SizedBox(height: 16),
+
                 Row(
                   children: [
                     Expanded(
@@ -273,9 +245,12 @@ class BuildingSidePanel extends StatelessWidget {
                         color: UiColors.red,
                         onTap: busy() || workers <= 0
                             ? null
-                            : () => onSetWorkers(
-                                  workers - 1,
-                                ),
+                            : () {
+                                setState(() {
+                                  workers--;
+                                });
+                                widget.onSetWorkers(workers);
+                              },
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -285,33 +260,42 @@ class BuildingSidePanel extends StatelessWidget {
                         color: UiColors.green,
                         onTap: busy() || workers >= maxWorkers
                             ? null
-                            : () => onSetWorkers(
-                                  workers + 1,
-                                ),
+                            : () {
+                                setState(() {
+                                  workers++;
+                                });
+                                widget.onSetWorkers(workers);
+                              },
                       ),
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 12),
+
                 actionButton(
                   text: "Ulepsz",
                   icon: Icons.arrow_upward,
                   color: UiColors.gold,
-                  onTap: busy() ? null : onUpgrade,
+                  onTap: busy() ? null : widget.onUpgrade,
                 ),
+
                 const SizedBox(height: 12),
+
                 actionButton(
                   text: "Usuń",
                   icon: Icons.delete,
                   color: UiColors.red,
-                  onTap: onDelete,
+                  onTap: widget.onDelete,
                 ),
+
                 const Spacer(),
+
                 actionButton(
                   text: "Zamknij",
                   icon: Icons.close,
                   color: UiColors.blue,
-                  onTap: onClose,
+                  onTap: widget.onClose,
                 ),
               ],
             ),

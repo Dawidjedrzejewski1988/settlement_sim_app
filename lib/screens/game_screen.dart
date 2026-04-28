@@ -8,7 +8,6 @@ import '../game/settlement_game.dart';
 import '../services/building_service.dart';
 import '../services/settlement_service.dart';
 import '../services/event_service.dart';
-import '../services/offline_progress_service.dart';
 import '../services/market_service.dart';
 import '../services/policy_service.dart';
 
@@ -56,7 +55,6 @@ class _GameScreenState extends State<GameScreen> {
   late GameActionController actionController;
 
   final liveRefresh = LiveRefreshController();
-  final offlineService = OfflineProgressService();
 
   Timer? eventTimer;
   Timer? hudTimer;
@@ -227,7 +225,7 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> loadSettlement() async {
     try {
-      final data = await dataController.loadSettlement(widget.token);
+      final data = await dataController.loadSettlement();
 
       if (!mounted) return;
 
@@ -241,22 +239,12 @@ class _GameScreenState extends State<GameScreen> {
         morale = data["morale"];
         population = data["population"];
       });
-
-      if (!offlineChecked) {
-        offlineChecked = true;
-      }
-
-      await offlineService.save(
-        wood: wood,
-        stone: stone,
-        money: money,
-      );
     } catch (_) {}
   }
 
   Future<void> loadAvailableBuildings() async {
     try {
-      final data = await dataController.loadBuildings(widget.token);
+      final data = await dataController.loadBuildings();
 
       if (!mounted) return;
 
@@ -268,7 +256,7 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> loadEvents() async {
     try {
-      final data = await dataController.loadEvents(widget.token);
+      final data = await dataController.loadEvents();
 
       if (!mounted) return;
 
@@ -280,14 +268,12 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> loadMarket() async {
     try {
-      final res = await marketService.getOffers(
-        widget.token,
-      );
+      final data = await marketService.getOffers();
 
       if (!mounted) return;
 
       setState(() {
-        marketOffers = res.data;
+        marketOffers = data;
       });
     } catch (e) {
       showError(e);
@@ -296,12 +282,11 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> buyMarket(String id) async {
     try {
-      await marketService.buyOffer(
-        token: widget.token,
-        offerId: id,
-        settlementId: widget.settlementId,
-        quantity: 1,
-      );
+    await marketService.buyOffer(
+      offerId: id,
+      settlementId: widget.settlementId,
+      quantity: 1,
+    );
 
       await loadMarket();
       await loadAll();
@@ -319,7 +304,6 @@ class _GameScreenState extends State<GameScreen> {
 
     try {
       await marketService.createOffer(
-        token: widget.token,
         settlementId: widget.settlementId,
         resourceType: data["resourceType"],
         quantity: data["quantity"],
@@ -335,14 +319,12 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> loadPolicy() async {
     try {
-      final res = await policyService.getTaxPolicy(
-        widget.token,
-      );
+      final data = await policyService.getTaxPolicy();
 
       if (!mounted) return;
 
       setState(() {
-        policyData = res.data;
+        policyData = data;
       });
     } catch (e) {
       showError(e);
@@ -352,7 +334,6 @@ class _GameScreenState extends State<GameScreen> {
   Future<void> choosePolicy(String optionId) async {
     try {
       await policyService.chooseTaxPolicy(
-        token: widget.token,
         optionId: optionId,
       );
 
@@ -415,8 +396,6 @@ class _GameScreenState extends State<GameScreen> {
       });
 
       await actionController.build(
-        token: widget.token,
-        settlementId: widget.settlementId,
         type: selectedType!,
         x: x,
         y: y,
@@ -430,11 +409,11 @@ class _GameScreenState extends State<GameScreen> {
     } catch (e) {
       showError(e);
     } finally {
-      if (!mounted) return;
-
-      setState(() {
-        loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
     }
   }
 
@@ -447,7 +426,6 @@ class _GameScreenState extends State<GameScreen> {
       });
 
       await actionController.upgrade(
-        token: widget.token,
         id: selectedBuilding!["id"],
       );
 
@@ -457,11 +435,11 @@ class _GameScreenState extends State<GameScreen> {
     } catch (e) {
       showError(e);
     } finally {
-      if (!mounted) return;
-
-      setState(() {
-        loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
     }
   }
 
@@ -474,7 +452,6 @@ class _GameScreenState extends State<GameScreen> {
       });
 
       await actionController.delete(
-        token: widget.token,
         id: selectedBuilding!["id"],
       );
 
@@ -484,11 +461,11 @@ class _GameScreenState extends State<GameScreen> {
     } catch (e) {
       showError(e);
     } finally {
-      if (!mounted) return;
-
-      setState(() {
-        loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
     }
   }
 
@@ -497,7 +474,6 @@ class _GameScreenState extends State<GameScreen> {
 
     try {
       await actionController.workers(
-        token: widget.token,
         id: selectedBuilding!["id"],
         workers: workers,
       );

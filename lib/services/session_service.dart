@@ -1,47 +1,22 @@
-import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../api/api_client.dart';
 
 class SessionService {
-  final storage = const FlutterSecureStorage();
+  final api = ApiClient();
 
-  final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: "https://settlementsim.pl",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    ),
-  );
-
-  Future<void> setToken() async {
-    final token = await storage.read(key: "token");
-
-    dio.options.headers["Authorization"] = "Bearer $token";
+  Future<List<dynamic>> getSessions() async {
+    final response = await api.dio.get("/api/sessions");
+    return response.data;
   }
 
-  Future<Response> getSessions() async {
-    await setToken();
-    return await dio.get("/api/sessions");
-  }
+  Future<Map<String, dynamic>> joinSession(String id) async {
+    final response = await api.dio.post("/api/sessions/$id/join");
 
-  Future<Response> createSession(String name) async {
-    await setToken();
+    final newToken = response.data["accessToken"];
 
-    return await dio.post(
-      "/api/sessions",
-      data: {
-        "name": name,
-      },
-    );
-  }
+    if (newToken != null) {
+      await api.storage.write(key: "token", value: newToken);
+    }
 
-  Future<Response> joinSession(String sessionId) async {
-    await setToken();
-    return await dio.post("/api/sessions/$sessionId/join");
-  }
-
-  Future<Response> deleteSession(String sessionId) async {
-    await setToken();
-    return await dio.delete("/api/sessions/$sessionId");
+    return response.data;
   }
 }

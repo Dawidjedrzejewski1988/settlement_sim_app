@@ -5,9 +5,7 @@ import '../logic/game_loader.dart';
 
 class GameDataController {
   final SettlementService settlementService;
-
   final BuildingService buildingService;
-
   final EventService eventService;
 
   GameDataController({
@@ -16,17 +14,13 @@ class GameDataController {
     required this.eventService,
   });
 
-  Future<Map<String, dynamic>> loadSettlement(
-    String token,
-  ) async {
-    final response = await settlementService.getSettlement(
-      token,
-    );
+  Future<Map<String, dynamic>> loadSettlement() async {
+    final response = await settlementService.getSettlement();
 
     final result = <String, dynamic>{};
 
     GameLoader.loadResources(
-      data: response.data,
+      data: response,
       onLoaded: (
         wood,
         plank,
@@ -51,25 +45,16 @@ class GameDataController {
     return result;
   }
 
-  Future<List<dynamic>> loadBuildings(
-    String token,
-  ) async {
-    final response = await buildingService.getAvailableBuildings(
-      token,
-    );
-
-    return response.data;
+  Future<List<dynamic>> loadBuildings() async {
+    final response = await buildingService.getAvailableBuildings();
+    return response;
   }
 
-  Future<List<dynamic>> loadEvents(
-    String token,
-  ) async {
-    final response = await eventService.getEvents(
-      token,
-    );
+  Future<List<dynamic>> loadEvents() async {
+    final response = await eventService.getEvents();
 
-    if (response.data is List) {
-      return response.data;
+    if (response is List) {
+      return response;
     }
 
     return [];

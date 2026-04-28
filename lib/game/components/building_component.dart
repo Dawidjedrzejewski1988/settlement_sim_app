@@ -4,6 +4,19 @@ import 'package:flame/collisions.dart';
 
 import '../data/building_definitions.dart';
 
+/// 🔥 CACHE SPRITE (GLOBALNY)
+class SpriteCache {
+  static final Map<String, Sprite> _cache = {};
+
+  static Future<Sprite> get(String path) async {
+    if (_cache.containsKey(path)) return _cache[path]!;
+
+    final sprite = await Sprite.load(path);
+    _cache[path] = sprite;
+    return sprite;
+  }
+}
+
 class BuildingComponent extends SpriteComponent
     with TapCallbacks, CollisionCallbacks {
   final Map data;
@@ -23,7 +36,8 @@ class BuildingComponent extends SpriteComponent
     final type = data["type"];
     final def = BuildingDefinitions.get(type);
 
-    sprite = await Sprite.load(
+    /// 🔥 zamiast Sprite.load
+    sprite = await SpriteCache.get(
       _getSprite(type),
     );
 
@@ -47,15 +61,11 @@ class BuildingComponent extends SpriteComponent
   }
 
   @override
-  void onTapDown(
-    TapDownEvent event,
-  ) {
+  void onTapDown(TapDownEvent event) {
     onTapBuilding?.call(data);
   }
 
-  String _getSprite(
-    String type,
-  ) {
+  String _getSprite(String type) {
     switch (type) {
       case "House":
         return "buildings/house_t1.png";

@@ -15,7 +15,7 @@ class FootprintTileComponent extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
-    final paint = Paint()..color = color.withOpacity(0.45);
+    final paint = Paint()..color = color.withValues(alpha: 0.45);
 
     final path = Path()
       ..moveTo(size.x / 2, 0)

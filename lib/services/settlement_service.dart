@@ -1,25 +1,10 @@
-// lib/services/settlement_service.dart
-
-import 'package:dio/dio.dart';
+import '../api/api_client.dart';
 
 class SettlementService {
-  final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: "https://settlementsim.pl",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    ),
-  );
+  final dio = ApiClient().dio;
 
-  Future<Response> getSettlement(String token) async {
-    return await dio.get(
-      "/api/settlement",
-      options: Options(
-        headers: {
-          "Authorization": "Bearer $token",
-        },
-      ),
-    );
+  Future getSettlement() async {
+    final res = await dio.get("/api/settlement");
+    return res.data;
   }
 }

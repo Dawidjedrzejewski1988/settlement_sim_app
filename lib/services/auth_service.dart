@@ -1,20 +1,10 @@
-import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../api/api_client.dart';
 
 class AuthService {
-  final storage = const FlutterSecureStorage();
+  final api = ApiClient();
 
-  final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: "https://settlementsim.pl",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    ),
-  );
-
-  Future<Response> login(String email, String password) async {
-    final response = await dio.post(
+  Future<void> login(String email, String password) async {
+    final response = await api.dio.post(
       "/api/auth/login",
       data: {
         "email": email,
@@ -24,16 +14,14 @@ class AuthService {
 
     final token = response.data["accessToken"];
 
-    await storage.write(
+    await api.storage.write(
       key: "token",
       value: token,
     );
-
-    return response;
   }
 
-  Future<Response> register(String email, String password) async {
-    return await dio.post(
+  Future<void> register(String email, String password) async {
+    await api.dio.post(
       "/api/auth/register",
       data: {
         "email": email,

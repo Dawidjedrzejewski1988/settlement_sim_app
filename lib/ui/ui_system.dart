@@ -76,7 +76,7 @@ class UiDecor {
       ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.35),
+          color: Colors.black.withValues(alpha: 0.35),
           blurRadius: 14,
           offset: const Offset(0, 6),
         ),
@@ -89,8 +89,8 @@ class UiDecor {
   }) {
     return BoxDecoration(
       color: active
-          ? UiColors.gold.withOpacity(0.14)
-          : Colors.black.withOpacity(0.22),
+          ? UiColors.gold.withValues(alpha: 0.14)
+          : Colors.black.withValues(alpha: 0.22),
       borderRadius: BorderRadius.circular(12),
       border: Border.all(
         color: active ? UiColors.gold : Colors.white10,
@@ -104,8 +104,8 @@ class UiDecor {
     return BoxDecoration(
       gradient: LinearGradient(
         colors: [
-          color.withOpacity(0.95),
-          color.withOpacity(0.75),
+          color.withValues(alpha: 0.95),
+          color.withValues(alpha: 0.75),
         ],
       ),
       borderRadius: BorderRadius.circular(12),
@@ -114,7 +114,7 @@ class UiDecor {
       ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.25),
+          color: Colors.black.withValues(alpha: 0.25),
           blurRadius: 8,
           offset: const Offset(0, 4),
         ),

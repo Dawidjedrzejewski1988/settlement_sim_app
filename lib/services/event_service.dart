@@ -1,23 +1,10 @@
-import 'package:dio/dio.dart';
+import '../api/api_client.dart';
 
 class EventService {
-  final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: "https://settlementsim.pl",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    ),
-  );
+  final dio = ApiClient().dio;
 
-  Future<Response> getEvents(String token) async {
-    return await dio.get(
-      "/api/events",
-      options: Options(
-        headers: {
-          "Authorization": "Bearer $token",
-        },
-      ),
-    );
+  Future getEvents() async {
+    final res = await dio.get("/api/events");
+    return res.data;
   }
 }

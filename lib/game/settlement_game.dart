@@ -3,15 +3,14 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
-import '../core/constants/game_constants.dart';
-import '../core/utils/iso_utils.dart';
+import 'constants/game_constants.dart';
+import 'utils/iso_utils.dart';
 import '../services/building_service.dart';
 
 import 'components/build_preview_component.dart';
 import 'components/building_component.dart';
-import 'components/diamond_tile.dart';
 import 'components/preview_tile.dart';
-import 'components/terrain_tile_component.dart';
+import 'components/map_component.dart';
 
 import 'systems/camera_system.dart';
 import 'systems/map_system.dart';
@@ -45,6 +44,7 @@ class SettlementGame extends FlameGame
 
   double zoomLevel = 0.30;
 
+  @override
   late final World world;
   late final CameraComponent cam;
 
@@ -84,12 +84,20 @@ class SettlementGame extends FlameGame
     add(world);
     add(cam);
 
-    final map = await MapSystem.load(GameConstants.apiUrl);
+    final map = await MapSystem.load(
+      apiUrl: GameConstants.apiUrl,
+      token: token,
+    );
 
     mapW = map["width"] ?? 60;
     mapH = map["height"] ?? 60;
 
-    await _drawGrid();
+    world.add(
+      MapComponent(
+        mapW: mapW,
+        mapH: mapH,
+      ),
+    );
 
     preview = PreviewTile()..visible = false;
     world.add(preview);
@@ -130,61 +138,53 @@ class SettlementGame extends FlameGame
     buildPreview.setOpacity(0.55);
   }
 
-  Future<void> _drawGrid() async {
-    for (int y = 0; y < mapH; y++) {
-      for (int x = 0; x < mapW; x++) {
-        final pos = IsoUtils.tileToWorld(x, y);
+  Future<void> refreshBuildings() async {
+    final response = await buildingService.getBuildings(
+      settlementId,
+    );
+
+    final List<dynamic> newData = response;
+
+    final existing = {
+      for (var c in world.children.whereType<BuildingComponent>())
+        c.data["id"]: c
+    };
+
+    buildingsData = newData;
+
+    for (final b in newData) {
+      final id = b["id"];
+
+      if (existing.containsKey(id)) {
+        existing[id]!.data.clear();
+        existing[id]!.data.addAll(b);
+      } else {
+        final pos = IsoUtils.tileToWorld(
+          b["tileX"],
+          b["tileY"],
+        );
+
+        final def = BuildingDefinitions.get(b["type"]);
 
         world.add(
-          TerrainTileComponent(
-            position: pos,
-            tileX: x,
-            tileY: y,
-          ),
-        );
-        world.add(
-          DiamondTile(
-            position: pos,
+          BuildingComponent(
+            data: b,
+            position: Vector2(
+              pos.x + 64 + def.offsetX,
+              pos.y + 64 + def.offsetY,
+            ),
+            onTapBuilding: onBuildingTap,
           ),
         );
       }
     }
-  }
 
-  Future<void> refreshBuildings() async {
-    final old = world.children.whereType<BuildingComponent>().toList();
+    final newIds = newData.map((e) => e["id"]).toSet();
 
-    for (final b in old) {
-      b.removeFromParent();
-    }
-
-    final response = await buildingService.getBuildings(
-      token,
-      settlementId,
-    );
-
-    buildingsData = response.data;
-
-    for (final b in buildingsData) {
-      final pos = IsoUtils.tileToWorld(
-        b["tileX"],
-        b["tileY"],
-      );
-
-      final def = BuildingDefinitions.get(
-        b["type"],
-      );
-
-      world.add(
-        BuildingComponent(
-          data: b,
-          position: Vector2(
-            pos.x + 64 + def.offsetX,
-            pos.y + 64 + def.offsetY,
-          ),
-          onTapBuilding: onBuildingTap,
-        ),
-      );
+    for (final c in existing.values) {
+      if (!newIds.contains(c.data["id"])) {
+        c.removeFromParent();
+      }
     }
   }
 
@@ -337,12 +337,6 @@ class SettlementGame extends FlameGame
 
   void toggleGrid(bool state) {
     buildMode = state;
-
-    final tiles = world.children.whereType<DiamondTile>();
-
-    for (final t in tiles) {
-      t.visibleGrid = state;
-    }
 
     preview.visible = state;
 

@@ -1,4 +1,5 @@
 import 'package:signalr_netcore/signalr_client.dart';
+import 'dart:developer' as dev;
 
 class GameHubService {
   HubConnection? _connection;
@@ -21,9 +22,9 @@ class GameHubService {
 
     try {
       await _connection!.start();
-      print("SignalR connected");
+      dev.log("SignalR connected");
     } catch (e) {
-      print("SignalR connection error: $e");
+      dev.log("SignalR connection error", error: e);
     }
   }
 
@@ -33,7 +34,7 @@ class GameHubService {
         await _connection!.stop();
       } catch (_) {}
       _connection = null;
-      print("SignalR disconnected");
+      dev.log("SignalR disconnected");
     }
   }
 
@@ -48,7 +49,7 @@ class GameHubService {
     try {
       await _connection!.invoke("JoinSession", args: [sessionId]);
     } catch (e) {
-      print("JoinSession error: $e");
+      dev.log("JoinSession error: $e");
     }
   }
 

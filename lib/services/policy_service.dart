@@ -1,37 +1,16 @@
-// lib/services/policy_service.dart
-
-import 'package:dio/dio.dart';
+import '../api/api_client.dart';
 
 class PolicyService {
-  final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: "https://settlementsim.pl",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    ),
-  );
+  final dio = ApiClient().dio;
 
-  void _auth(String token) {
-    dio.options.headers["Authorization"] = "Bearer $token";
-  }
-
-  Future<Response> getTaxPolicy(
-    String token,
-  ) async {
-    _auth(token);
-
-    return await dio.get(
-      "/api/policy/tax",
-    );
+  Future<Map<String, dynamic>> getTaxPolicy() async {
+    final res = await dio.get("/api/policy/tax");
+    return res.data;
   }
 
   Future<void> chooseTaxPolicy({
-    required String token,
     required String optionId,
   }) async {
-    _auth(token);
-
     await dio.post(
       "/api/policy/tax",
       data: {

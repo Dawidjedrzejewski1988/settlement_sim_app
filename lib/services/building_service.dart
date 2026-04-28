@@ -1,52 +1,26 @@
-import 'package:dio/dio.dart';
+import '../api/api_client.dart';
 
 class BuildingService {
-  final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: "https://settlementsim.pl",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    ),
-  );
+  final dio = ApiClient().dio;
 
-  void _auth(String token) {
-    dio.options.headers["Authorization"] = "Bearer $token";
-  }
-
-  Future<Response> getBuildings(
-    String token,
-    String settlementId,
-  ) async {
-    _auth(token);
-
-    return await dio.get(
+  Future<List<dynamic>> getBuildings(String settlementId) async {
+    final res = await dio.get(
       "/api/buildings",
-      queryParameters: {
-        "settlementId": settlementId,
-      },
+      queryParameters: {"settlementId": settlementId},
     );
+    return res.data;
   }
 
-  Future<Response> getAvailableBuildings(
-    String token,
-  ) async {
-    _auth(token);
-
-    return await dio.get(
-      "/api/buildings/available",
-    );
+  Future<List<dynamic>> getAvailableBuildings() async {
+    final res = await dio.get("/api/buildings/available");
+    return res.data;
   }
 
   Future<void> buildBuilding({
-    required String token,
-    required String settlementId,
     required String type,
     required int tileX,
     required int tileY,
   }) async {
-    _auth(token);
-
     await dio.post(
       "/api/buildings",
       data: {
@@ -57,36 +31,30 @@ class BuildingService {
     );
   }
 
-  Future<void> setWorkers({
-    required String token,
+  // ✅ DODAJ TO
+  Future<void> updateWorkers({
     required String buildingId,
     required int workers,
   }) async {
-    _auth(token);
-
     await dio.patch(
       "/api/buildings/$buildingId/workers",
       data: workers,
     );
   }
 
-  Future<void> upgradeBuilding({
-    required String token,
+  // ✅ DODAJ TO
+  Future<void> upgrade({
     required String buildingId,
   }) async {
-    _auth(token);
-
     await dio.patch(
       "/api/buildings/$buildingId/upgrade",
     );
   }
 
-  Future<void> deleteBuilding({
-    required String token,
+  // ✅ DODAJ TO
+  Future<void> delete({
     required String buildingId,
   }) async {
-    _auth(token);
-
     await dio.delete(
       "/api/buildings/$buildingId",
     );

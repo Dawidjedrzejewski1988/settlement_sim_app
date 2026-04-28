@@ -3,20 +3,14 @@ import '../services/building_service.dart';
 class BuildingActions {
   final BuildingService service;
 
-  BuildingActions(
-    this.service,
-  );
+  BuildingActions(this.service);
 
   Future<void> build({
-    required String token,
-    required String settlementId,
     required String type,
     required int x,
     required int y,
   }) async {
     await service.buildBuilding(
-      token: token,
-      settlementId: settlementId,
       type: type,
       tileX: x,
       tileY: y,
@@ -24,33 +18,27 @@ class BuildingActions {
   }
 
   Future<void> workers({
-    required String token,
-    required dynamic id,
+    required String id,
     required int workers,
   }) async {
-    await service.setWorkers(
-      token: token,
+    await service.updateWorkers(
       buildingId: id,
       workers: workers,
     );
   }
 
   Future<void> upgrade({
-    required String token,
-    required dynamic id,
+    required String id,
   }) async {
-    await service.upgradeBuilding(
-      token: token,
+    await service.upgrade(
       buildingId: id,
     );
   }
 
   Future<void> delete({
-    required String token,
-    required dynamic id,
+    required String id,
   }) async {
-    await service.deleteBuilding(
-      token: token,
+    await service.delete(
       buildingId: id,
     );
   }
