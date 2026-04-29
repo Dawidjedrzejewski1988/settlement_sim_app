@@ -1,4 +1,4 @@
-import '../services/building_service.dart';
+import '../api/services.dart';
 
 class BuildingActions {
   final BuildingService service;
@@ -30,16 +30,12 @@ class BuildingActions {
   Future<void> upgrade({
     required String id,
   }) async {
-    await service.upgrade(
-      buildingId: id,
-    );
+    await service.upgrade(id);
   }
 
   Future<void> delete({
     required String id,
   }) async {
-    await service.delete(
-      buildingId: id,
-    );
+    await service.delete(id);
   }
 }

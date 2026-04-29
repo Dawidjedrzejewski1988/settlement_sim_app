@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/session_model.dart';
-import '../services/session_service.dart';
+import '../api/models.dart';
+import '../api/services.dart';
 import 'game_screen.dart';
 
 class SessionsScreen extends StatefulWidget {
@@ -13,7 +13,7 @@ class SessionsScreen extends StatefulWidget {
 class _SessionsScreenState extends State<SessionsScreen> {
   final SessionService service = SessionService();
 
-  List<SessionModel> sessions = [];
+  List<Session> sessions = [];
   bool loading = true;
 
   @override
@@ -27,9 +27,8 @@ class _SessionsScreenState extends State<SessionsScreen> {
       setState(() => loading = true);
 
       final response = await service.getSessions();
-
-      sessions = response.map((e) => SessionModel.fromJson(e)).toList();        
-        } catch (e) {
+      sessions = response;
+    } catch (e) {
       debugPrint("SESSION ERROR: $e");
     }
 
@@ -41,10 +40,15 @@ class _SessionsScreenState extends State<SessionsScreen> {
     try {
       final response = await service.joinSession(id);
 
-      if (!mounted) return; // 🔥 KLUCZOWE
+      if (!mounted) return;
 
-      final accessToken = response["accessToken"];
-      final settlementId = response["settlementId"];
+      final accessToken = response.accessToken;
+      final settlementId = response.settlementId;
+
+      if (accessToken == null) {
+        debugPrint("Brak tokena lub settlementId");
+        return;
+      }
 
       Navigator.push(
         context,
@@ -60,18 +64,18 @@ class _SessionsScreenState extends State<SessionsScreen> {
     }
   }
 
-  String translateStatus(String status) {
+  String translateStatus(String? status) {
     switch (status) {
       case "Running":
         return "W trakcie";
       case "Finished":
         return "Zakończona";
       default:
-        return status;
+        return status ?? "Nieznany";
     }
   }
 
-  Color statusColor(String status) {
+  Color statusColor(String? status) {
     switch (status) {
       case "Running":
         return Colors.green;
@@ -96,7 +100,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
 
           Positioned.fill(
             child: Container(
-              color: Colors.black.withValues(alpha: 0.55)
+              color: Colors.black.withValues(alpha: 0.55),
             ),
           ),
 
@@ -146,7 +150,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            s.name,
+                                            s.name ?? "Brak nazwy",
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 18,
@@ -157,7 +161,8 @@ class _SessionsScreenState extends State<SessionsScreen> {
                                           Text(
                                             "Graczy: ${s.playerCount}",
                                             style: const TextStyle(
-                                                color: Colors.white70),
+                                              color: Colors.white70,
+                                            ),
                                           ),
                                           Text(
                                             "Status: ${translateStatus(s.status)}",

@@ -1,10 +1,9 @@
-// lib/widgets/market_panel.dart
-
 import 'package:flutter/material.dart';
 import '../ui/ui_system.dart';
+import '../api/models.dart';
 
 class MarketPanel extends StatelessWidget {
-  final List<dynamic> offers;
+  final List<MarketOffer> offers;
   final VoidCallback onClose;
   final VoidCallback onCreate;
   final Function(String id) onBuy;
@@ -55,17 +54,12 @@ class MarketPanel extends StatelessWidget {
                 Expanded(
                   child: Text(
                     "Rynek",
-                    style: UiText.title(
-                      size: 28,
-                    ),
+                    style: UiText.title(size: 28),
                   ),
                 ),
                 IconButton(
                   onPressed: onClose,
-                  icon: const Icon(
-                    Icons.close,
-                    color: Colors.white,
-                  ),
+                  icon: const Icon(Icons.close, color: Colors.white),
                 ),
               ],
             ),
@@ -85,9 +79,7 @@ class MarketPanel extends StatelessWidget {
                   ? const Center(
                       child: Text(
                         "Brak ofert",
-                        style: TextStyle(
-                          color: Colors.white70,
-                        ),
+                        style: TextStyle(color: Colors.white70),
                       ),
                     )
                   : ListView.builder(
@@ -95,45 +87,31 @@ class MarketPanel extends StatelessWidget {
                       itemBuilder: (_, i) {
                         final o = offers[i];
 
-                        final id = o["id"].toString();
-
-                        final type = o["resourceType"].toString();
-
-                        final qty = (o["remainingQuantity"] as num).toDouble();
-
-                        final price = (o["finalPrice"] as num).toDouble();
-
                         return Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 10,
-                          ),
-                          padding: const EdgeInsets.all(
-                            12,
-                          ),
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(12),
                           decoration: UiDecor.card(),
                           child: Row(
                             children: [
                               Expanded(
                                 child: Text(
-                                  "${icon(type)} $type | ${qty.toInt()} szt.",
+                                  "${icon(o.resourceType)} ${o.resourceType} | ${o.remainingQuantity.toInt()} szt.",
                                   style: UiText.body(),
                                 ),
                               ),
                               Text(
-                                "${price.toStringAsFixed(0)} 💰",
+                                "${o.finalPrice.toStringAsFixed(0)} 💰",
                                 style: UiText.value(
                                   color: Colors.yellowAccent,
                                 ),
                               ),
-                              const SizedBox(
-                                width: 10,
-                              ),
+                              const SizedBox(width: 10),
                               SizedBox(
                                 width: 110,
                                 child: UiButton(
                                   text: "Kup",
                                   color: UiColors.green,
-                                  onTap: () => onBuy(id),
+                                  onTap: () => onBuy(o.id),
                                 ),
                               ),
                             ],

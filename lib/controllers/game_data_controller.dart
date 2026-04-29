@@ -1,6 +1,5 @@
-import '../services/building_service.dart';
-import '../services/event_service.dart';
-import '../services/settlement_service.dart';
+import '../api/services.dart';
+import '../api/models.dart';
 import '../logic/game_loader.dart';
 
 class GameDataController {
@@ -45,18 +44,11 @@ class GameDataController {
     return result;
   }
 
-  Future<List<dynamic>> loadBuildings() async {
-    final response = await buildingService.getAvailableBuildings();
-    return response;
+  Future<List<AvailableBuilding>> loadBuildings() async {
+    return await buildingService.getAvailableBuildings();
   }
 
-  Future<List<dynamic>> loadEvents() async {
-    final response = await eventService.getEvents();
-
-    if (response is List) {
-      return response;
-    }
-
-    return [];
+  Future<List<Event>> loadEvents() async {
+    return await eventService.getEvents();
   }
 }

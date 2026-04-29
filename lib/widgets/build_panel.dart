@@ -1,10 +1,9 @@
-// lib/widgets/build_panel.dart
-
 import 'package:flutter/material.dart';
 import '../ui/ui_system.dart';
+import '../api/models.dart';
 
 class BuildPanel extends StatefulWidget {
-  final List<dynamic> buildings;
+  final List<AvailableBuilding> buildings;
   final Function(String) onSelect;
 
   const BuildPanel({
@@ -86,28 +85,21 @@ class _BuildPanelState extends State<BuildPanel> {
     }
   }
 
-  List<dynamic> get filtered {
+  List<AvailableBuilding> get filtered {
     if (category == "Wszystkie") {
       return widget.buildings;
     }
 
     return widget.buildings.where((b) {
-      return getCategory(
-            b["type"],
-          ) ==
-          category;
+      return getCategory(b.type) == category;
     }).toList();
   }
 
-  String costText(Map b) {
-    final cost = b["cost"] ?? [];
+  String costText(AvailableBuilding b) {
+    if (b.cost.isEmpty) return "-";
 
-    if (cost.isEmpty) {
-      return "-";
-    }
-
-    return cost.map<String>((e) {
-      return "${e["name"]}: ${e["amount"].toInt()}";
+    return b.cost.map((e) {
+      return "${e.name}: ${e.amount.toInt()}";
     }).join(" | ");
   }
 
@@ -123,9 +115,7 @@ class _BuildPanelState extends State<BuildPanel> {
         },
         child: Container(
           height: 42,
-          decoration: UiDecor.card(
-            active: active,
-          ),
+          decoration: UiDecor.card(active: active),
           child: Center(
             child: Text(
               text,
@@ -140,68 +130,41 @@ class _BuildPanelState extends State<BuildPanel> {
     );
   }
 
-  Widget buildCard(Map b) {
-    final canBuild = b["canBuild"] ?? false;
+  Widget buildCard(AvailableBuilding b) {
+    final canBuild = b.canBuild;
 
     return InkWell(
-      onTap: canBuild
-          ? () => widget.onSelect(
-                b["type"],
-              )
-          : null,
+      onTap: canBuild ? () => widget.onSelect(b.type) : null,
       borderRadius: BorderRadius.circular(14),
       child: Opacity(
         opacity: canBuild ? 1 : 0.55,
         child: Container(
-          margin: const EdgeInsets.only(
-            bottom: 10,
-          ),
+          margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(12),
-          decoration: UiDecor.card(
-            active: canBuild,
-          ),
+          decoration: UiDecor.card(active: canBuild),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Text(
-                    icon(
-                      b["type"],
-                    ),
-                    style: const TextStyle(
-                      fontSize: 24,
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
+                  Text(icon(b.type), style: const TextStyle(fontSize: 24)),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      b["name"],
-                      style: UiText.title(
-                        size: 18,
-                      ),
+                      b.name,
+                      style: UiText.title(size: 18),
                     ),
                   ),
                   if (canBuild)
-                    const Icon(
-                      Icons.arrow_forward_ios,
-                      color: UiColors.gold,
-                      size: 16,
-                    ),
+                    const Icon(Icons.arrow_forward_ios,
+                        color: UiColors.gold, size: 16),
                   if (!canBuild)
-                    const Icon(
-                      Icons.lock,
-                      color: Colors.red,
-                    ),
+                    const Icon(Icons.lock, color: Colors.red),
                 ],
               ),
-              const SizedBox(
-                height: 8,
-              ),
+              const SizedBox(height: 8),
               Text(
-                canBuild ? costText(b) : (b["reason"] ?? "Zablokowane"),
+                canBuild ? costText(b) : (b.reason ?? "Zablokowane"),
                 style: UiText.body(
                   size: 13,
                   color: canBuild ? UiColors.textSoft : Colors.redAccent,
@@ -225,32 +188,15 @@ class _BuildPanelState extends State<BuildPanel> {
         child: UiPanel(
           child: Column(
             children: [
-              Text(
-                "Budowa",
-                style: UiText.title(
-                  size: 28,
-                ),
-              ),
-              const SizedBox(
-                height: 14,
-              ),
-              Row(
-                children: categories
-                    .map(
-                      categoryButton,
-                    )
-                    .toList(),
-              ),
-              const SizedBox(
-                height: 14,
-              ),
+              Text("Budowa", style: UiText.title(size: 28)),
+              const SizedBox(height: 14),
+              Row(children: categories.map(categoryButton).toList()),
+              const SizedBox(height: 14),
               Expanded(
                 child: ListView.builder(
                   itemCount: filtered.length,
                   itemBuilder: (_, index) {
-                    return buildCard(
-                      filtered[index],
-                    );
+                    return buildCard(filtered[index]);
                   },
                 ),
               ),

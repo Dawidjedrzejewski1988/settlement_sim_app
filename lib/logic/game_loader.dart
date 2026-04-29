@@ -1,6 +1,8 @@
+import '../api/models.dart';
+
 class GameLoader {
   static void loadResources({
-    required Map data,
+    required Settlement data,
     required Function(
       double wood,
       double plank,
@@ -12,38 +14,38 @@ class GameLoader {
       int population,
     ) onLoaded,
   }) {
-    final Map<String, double> resources = {};
-
-    for (final item in data["resources"]) {
-      resources[item["code"]] = (item["amount"] as num).toDouble();
+    double get(String code) {
+      return data.resources
+          .firstWhere(
+            (r) => r.code == code,
+            orElse: () => Resource(code: code, amount: 0),
+          )
+          .amount;
     }
 
     onLoaded(
-      resources["Wood"] ?? 0,
-      resources["Plank"] ?? 0,
-      resources["Berries"] ?? 0,
-      resources["Stone"] ?? 0,
-      resources["Bread"] ?? 0,
-      (data["money"] as num).toDouble(),
-      (data["morale"] as num).toDouble(),
-      data["population"] ?? 0,
+      get("Wood"),
+      get("Plank"),
+      get("Berries"),
+      get("Stone"),
+      get("Bread"),
+      data.money,
+      data.morale,
+      data.population,
     );
   }
 
   static int getTimer({
-    required Map? building,
-    required List events,
+    required Building? building,
+    required List<Event> events,
   }) {
-    if (building == null) {
-      return 0;
-    }
+    if (building == null) return 0;
 
-    final id = building["id"].toString();
+    final id = building.id;
 
     for (final e in events) {
-      final scope = e["scope"]?.toString() ?? "";
-
-      final sec = e["remainingSeconds"] ?? 0;
+      final scope = e.scope ?? "";
+      final sec = e.remainingSeconds;
 
       if (sec > 0 && scope.contains(id)) {
         return sec;

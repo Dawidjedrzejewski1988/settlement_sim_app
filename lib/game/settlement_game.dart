@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 
 import 'constants/game_constants.dart';
 import 'utils/iso_utils.dart';
-import '../services/building_service.dart';
+import '../api/services.dart';
+import '../api/models.dart';
 
 import 'components/build_preview_component.dart';
 import 'components/building_component.dart';
@@ -53,7 +54,7 @@ class SettlementGame extends FlameGame
 
   String? selectedBuildType;
 
-  List<dynamic> buildingsData = [];
+  List<Building> buildingsData = [];
 
   bool dragging = false;
   bool buildMode = false;
@@ -139,11 +140,7 @@ class SettlementGame extends FlameGame
   }
 
   Future<void> refreshBuildings() async {
-    final response = await buildingService.getBuildings(
-      settlementId,
-    );
-
-    final List<dynamic> newData = response;
+    final List<Building> newData = await buildingService.getBuildings();
 
     final existing = {
       for (var c in world.children.whereType<BuildingComponent>())
@@ -153,22 +150,22 @@ class SettlementGame extends FlameGame
     buildingsData = newData;
 
     for (final b in newData) {
-      final id = b["id"];
+      final id = b.id;
 
       if (existing.containsKey(id)) {
         existing[id]!.data.clear();
-        existing[id]!.data.addAll(b);
+        existing[id]!.data.addAll(b.toJson());
       } else {
         final pos = IsoUtils.tileToWorld(
-          b["tileX"],
-          b["tileY"],
+          b.tileX,
+          b.tileY,
         );
 
-        final def = BuildingDefinitions.get(b["type"]);
+        final def = BuildingDefinitions.get(b.type);
 
         world.add(
           BuildingComponent(
-            data: b,
+            data: b.toJson(),
             position: Vector2(
               pos.x + 64 + def.offsetX,
               pos.y + 64 + def.offsetY,
@@ -179,7 +176,7 @@ class SettlementGame extends FlameGame
       }
     }
 
-    final newIds = newData.map((e) => e["id"]).toSet();
+    final newIds = newData.map((e) => e.id).toSet();
 
     for (final c in existing.values) {
       if (!newIds.contains(c.data["id"])) {
@@ -195,12 +192,10 @@ class SettlementGame extends FlameGame
     int h,
   ) {
     for (final b in buildingsData) {
-      final bx = b["tileX"];
-      final by = b["tileY"];
+      final bx = b.tileX;
+      final by = b.tileY;
 
-      final def = BuildingDefinitions.get(
-        b["type"],
-      );
+      final def = BuildingDefinitions.get(b.type);
 
       for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {

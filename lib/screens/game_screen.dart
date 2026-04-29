@@ -5,17 +5,13 @@ import 'package:flame/game.dart';
 
 import '../game/settlement_game.dart';
 
-import '../services/building_service.dart';
-import '../services/settlement_service.dart';
-import '../services/event_service.dart';
-import '../services/market_service.dart';
-import '../services/policy_service.dart';
+import '../api/services.dart';
+import '../api/models.dart';
 
 import '../logic/game_loader.dart';
 import '../logic/building_actions.dart';
 
 import '../controllers/game_data_controller.dart';
-import '../controllers/game_action_controller.dart';
 import '../controllers/live_refresh_controller.dart';
 
 import '../widgets/top_hud.dart';
@@ -52,21 +48,21 @@ class _GameScreenState extends State<GameScreen> {
   final policyService = PolicyService();
 
   late GameDataController dataController;
-  late GameActionController actionController;
+  late BuildingActions actions;
 
   final liveRefresh = LiveRefreshController();
 
   Timer? eventTimer;
   Timer? hudTimer;
 
-  List<dynamic> events = [];
-  List<dynamic> availableBuildings = [];
-  List<dynamic> marketOffers = [];
+  List<Event> events = [];
+  List<AvailableBuilding> availableBuildings = [];
+  List<MarketOffer> marketOffers = [];
 
-  Map? policyData;
+  Policy? policyData;
 
   String? selectedType;
-  Map? selectedBuilding;
+  Building? selectedBuilding;
 
   bool showBuildPanel = false;
   bool showMarket = false;
@@ -102,11 +98,7 @@ class _GameScreenState extends State<GameScreen> {
       eventService: eventService,
     );
 
-    actionController = GameActionController(
-      BuildingActions(
-        buildingService,
-      ),
-    );
+    actions = BuildingActions(buildingService);
 
     game = SettlementGame(
       token: widget.token,
@@ -164,12 +156,11 @@ class _GameScreenState extends State<GameScreen> {
     breadPerSec = 0;
     moneyPerSec = 0;
 
-    for (final b in game.buildingsData) {
-      if (b["status"].toString() != "Active") continue;
+    for (final b in game.buildingsData.cast<Building>()) {
+      if (b.status != "Active") continue;
 
-      final production = (b["productionPerHour"] as num?)?.toDouble() ?? 0;
-
-      final type = b["type"].toString();
+      final production = b.productionPerHour;
+      final type = b.type;
 
       switch (type) {
         case "LumberCamp":
@@ -193,8 +184,7 @@ class _GameScreenState extends State<GameScreen> {
           break;
       }
 
-      final maintenance = (b["maintenanceCost"] as num?)?.toDouble() ?? 0;
-
+      final maintenance = b.maintenanceCost;
       moneyPerSec -= maintenance / 3600;
     }
   }
@@ -272,9 +262,9 @@ class _GameScreenState extends State<GameScreen> {
 
       if (!mounted) return;
 
-      setState(() {
-        marketOffers = data;
-      });
+    setState(() {
+      marketOffers = data;
+    });
     } catch (e) {
       showError(e);
     }
@@ -284,7 +274,6 @@ class _GameScreenState extends State<GameScreen> {
     try {
     await marketService.buyOffer(
       offerId: id,
-      settlementId: widget.settlementId,
       quantity: 1,
     );
 
@@ -333,9 +322,7 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> choosePolicy(String optionId) async {
     try {
-      await policyService.chooseTaxPolicy(
-        optionId: optionId,
-      );
+      await policyService.chooseTaxPolicy(optionId);
 
       await loadAll();
       await loadPolicy();
@@ -344,10 +331,10 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-  Map? getBuildingData(String type) {
+  AvailableBuilding? getBuildingData(String type) {
     try {
       return availableBuildings.firstWhere(
-        (e) => e["type"] == type,
+        (e) => e.type == type,
       );
     } catch (_) {
       return null;
@@ -363,7 +350,9 @@ class _GameScreenState extends State<GameScreen> {
 
   void openBuildingPanel(Map data) {
     setState(() {
-      selectedBuilding = data;
+      selectedBuilding = Building.fromJson(
+        Map<String, dynamic>.from(data),
+      );
       showBuildPanel = false;
       showMarket = false;
       showPolicy = false;
@@ -382,7 +371,16 @@ class _GameScreenState extends State<GameScreen> {
 
     final ok = await showBuildConfirmDialog(
       context: context,
-      data: data,
+      data: {
+        "type": data.type,
+        "name": data.name,
+        "cost": data.cost
+            .map((e) => {
+                  "code": e.code,
+                  "amount": e.amount,
+                })
+            .toList(),
+      },
       wood: wood,
       stone: stone,
       money: money,
@@ -395,7 +393,7 @@ class _GameScreenState extends State<GameScreen> {
         loading = true;
       });
 
-      await actionController.build(
+      await actions.build(
         type: selectedType!,
         x: x,
         y: y,
@@ -425,8 +423,8 @@ class _GameScreenState extends State<GameScreen> {
         loading = true;
       });
 
-      await actionController.upgrade(
-        id: selectedBuilding!["id"],
+      actions.upgrade(
+        id: selectedBuilding!.id,
       );
 
       selectedBuilding = null;
@@ -451,8 +449,8 @@ class _GameScreenState extends State<GameScreen> {
         loading = true;
       });
 
-      await actionController.delete(
-        id: selectedBuilding!["id"],
+      actions.delete(
+        id: selectedBuilding!.id,
       );
 
       selectedBuilding = null;
@@ -473,8 +471,8 @@ class _GameScreenState extends State<GameScreen> {
     if (selectedBuilding == null) return;
 
     try {
-      await actionController.workers(
-        id: selectedBuilding!["id"],
+      actions.workers(
+        id: selectedBuilding!.id,
         workers: workers,
       );
 
@@ -543,7 +541,17 @@ class _GameScreenState extends State<GameScreen> {
             ),
           if (showPolicy && policyData != null)
             PolicyPanel(
-              policy: policyData!,
+              policy: {
+                "id": policyData!.id,
+                "title": policyData!.title,
+                "description": policyData!.description,
+                "options": policyData!.options
+                    .map((e) => {
+                          "id": e.id,
+                          "label": e.label,
+                        })
+                    .toList(),
+              },
               onClose: () {
                 setState(() {
                   showPolicy = false;
@@ -553,7 +561,13 @@ class _GameScreenState extends State<GameScreen> {
             ),
           if (selectedBuilding != null)
             BuildingSidePanel(
-              building: selectedBuilding!,
+              building: {
+                "id": selectedBuilding!.id,
+                "type": selectedBuilding!.type,
+                "workers": selectedBuilding!.workers,
+                "status": selectedBuilding!.status,
+                "maxWorkers": selectedBuilding!.maxWorkers,
+              },
               timer: getTimer(),
               onUpgrade: upgradeBuilding,
               onDelete: deleteBuilding,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
+import '../api/services.dart';
 import 'sessions_screen.dart';
 
 class AuthScreen extends StatefulWidget {
