@@ -210,6 +210,29 @@ class MarketService {
   Future<void> deleteOffer(String id) async {
     await dio.delete("/api/market/offers/$id");
   }
+
+  Future<List<MarketHistoryEntry>>
+      getHistory() async {
+    try {
+      final res = await dio.get(
+        "/api/market/history",
+      );
+
+      return (res.data as List)
+          .map(
+            (e) =>
+                MarketHistoryEntry.fromJson(
+              e,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      throw Exception(
+        "getHistory failed: $e",
+      );
+    }
+  }
+  
 }
 
 class PolicyService {
@@ -275,5 +298,49 @@ class SettlementService {
   Future<Settlement> getSettlement() async {
     final res = await dio.get("/api/settlement");
     return Settlement.fromJson(res.data);
+  }
+}
+
+class QuestService {
+  final dio = ApiClient().dio;
+
+  Future<QuestResponse> getQuests() async {
+    try {
+      final res = await dio.get(
+        "/api/quests",
+      );
+
+      return QuestResponse.fromJson(
+        res.data,
+      );
+    } catch (e) {
+      throw Exception(
+        "getQuests failed: $e",
+      );
+    }
+  }
+}
+
+class RankingService {
+  final dio = ApiClient().dio;
+
+  Future<List<RankingEntry>>
+      getRanking() async {
+    try {
+      final res = await dio.get(
+        "/api/ranking",
+      );
+
+      return (res.data as List)
+          .map(
+            (e) =>
+                RankingEntry.fromJson(e),
+          )
+          .toList();
+    } catch (e) {
+      throw Exception(
+        "getRanking failed: $e",
+      );
+    }
   }
 }

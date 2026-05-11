@@ -1,5 +1,3 @@
-// lib/widgets/top_hud.dart
-
 import 'package:flutter/material.dart';
 import '../ui/ui_system.dart';
 

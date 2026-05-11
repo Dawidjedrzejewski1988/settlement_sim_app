@@ -272,6 +272,10 @@ class Building {
   final int housing;
   final double moraleBonus;
   final double maintenanceCost;
+  final double usedStorage;
+  final double freeStorage;
+  final int currentResidents;
+  final double taxIncome;
 
   final int tileX;
   final int tileY;
@@ -290,6 +294,10 @@ class Building {
     required this.housing,
     required this.moraleBonus,
     required this.maintenanceCost,
+    required this.usedStorage,
+    required this.freeStorage,
+    required this.currentResidents,
+    required this.taxIncome,
     required this.tileX,
     required this.tileY,
   });
@@ -302,20 +310,17 @@ class Building {
       workers: json["workers"] ?? 0,
       status: json["status"] ?? "",
       maxWorkers: json["maxWorkers"] ?? 0,
-      productionPerHour:
-          (json["productionPerHour"] as num?)?.toDouble() ?? 0.0,
-      producedResource: json['producedResource'] != null
-          ? Resource.fromJson(json['producedResource'])
-          : null,
-      input: (json['input'] as List<dynamic>? ?? [])
-          .map((e) => Resource.fromJson(e))
-          .toList(),
+      productionPerHour: (json["productionPerHour"] as num?)?.toDouble() ?? 0.0,
+      producedResource: json['producedResource'] != null ? Resource.fromJson(json['producedResource']) : null,
+      input: (json['input'] as List<dynamic>? ?? []).map((e) => Resource.fromJson(e)).toList(),
       storageCapacity: json["storageCapacity"] ?? 0,
       housing: json["housing"] ?? 0,
-      moraleBonus:
-          (json["moraleBonus"] as num?)?.toDouble() ?? 0.0,
-      maintenanceCost:
-          (json["maintenanceCost"] as num?)?.toDouble() ?? 0.0,
+      moraleBonus: (json["moraleBonus"] as num?)?.toDouble() ?? 0.0,
+      maintenanceCost: (json["maintenanceCost"] as num?)?.toDouble() ?? 0.0,
+      usedStorage: (json["usedStorage"] as num?)?.toDouble() ?? 0,
+      freeStorage: (json["freeStorage"] as num?)?.toDouble() ?? 0,
+      currentResidents: json["currentResidents"] ?? 0,
+      taxIncome: (json["taxIncome"] as num?)?.toDouble() ?? 0,
       tileX: json["tileX"] ?? 0,
       tileY: json["tileY"] ?? 0,
     );
@@ -334,6 +339,10 @@ class Building {
     "input": input.map((e) => e.toJson()).toList(),
     "storageCapacity": storageCapacity,
     "housing": housing,
+    "usedStorage": usedStorage,
+    "freeStorage": freeStorage,
+    "currentResidents": currentResidents,
+    "taxIncome": taxIncome,
     "moraleBonus": moraleBonus,
     "maintenanceCost": maintenanceCost,
     "tileX": tileX,
@@ -625,6 +634,198 @@ class Policy {
       options: (json['options'] as List<dynamic>? ?? [])
           .map((e) => PolicyOption.fromJson(e))
           .toList(),
+    );
+  }
+}
+
+class Quest {
+  final String id;
+
+  final String description;
+
+  final bool isCompleted;
+
+  final int stage;
+
+  Quest({
+    required this.id,
+    required this.description,
+    required this.isCompleted,
+    required this.stage,
+  });
+
+  factory Quest.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return Quest(
+      id: json["id"]?.toString() ?? "",
+
+      description:
+          json["description"]?.toString() ??
+              "",
+
+      isCompleted:
+          json["isCompleted"] ?? false,
+
+      stage: json["stage"] ?? 0,
+    );
+  }
+}
+
+class QuestResponse {
+  final List<Quest> active;
+
+  final List<Quest> completed;
+
+  QuestResponse({
+    required this.active,
+    required this.completed,
+  });
+
+  factory QuestResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return QuestResponse(
+      active:
+          (json["active"]
+                      as List<dynamic>? ??
+                  [])
+              .map(
+                (e) => Quest.fromJson(e),
+              )
+              .toList(),
+
+      completed:
+          (json["completed"]
+                      as List<dynamic>? ??
+                  [])
+              .map(
+                (e) => Quest.fromJson(e),
+              )
+              .toList(),
+    );
+  }
+}
+
+class RankingEntry {
+  final String settlementId;
+
+  final String settlementName;
+
+  final int population;
+
+  final double money;
+
+  final double morale;
+
+  final double score;
+
+  RankingEntry({
+    required this.settlementId,
+    required this.settlementName,
+    required this.population,
+    required this.money,
+    required this.morale,
+    required this.score,
+  });
+
+  factory RankingEntry.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return RankingEntry(
+      settlementId:
+          json["settlementId"]
+                  ?.toString() ??
+              "",
+
+      settlementName:
+          json["settlementName"]
+                  ?.toString() ??
+              "",
+
+      population:
+          json["population"] ?? 0,
+
+      money:
+          (json["money"] as num?)
+                  ?.toDouble() ??
+              0,
+
+      morale:
+          (json["morale"] as num?)
+                  ?.toDouble() ??
+              0,
+
+      score:
+          (json["score"] as num?)
+                  ?.toDouble() ??
+              0,
+    );
+  }
+}
+
+class MarketHistoryEntry {
+  final String id;
+
+  final String resourceType;
+
+  final double quantity;
+
+  final double pricePerUnit;
+
+  final double totalPrice;
+
+  final double commission;
+
+  final DateTime? executedAt;
+
+  MarketHistoryEntry({
+    required this.id,
+    required this.resourceType,
+    required this.quantity,
+    required this.pricePerUnit,
+    required this.totalPrice,
+    required this.commission,
+    required this.executedAt,
+  });
+
+  factory MarketHistoryEntry.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return MarketHistoryEntry(
+      id: json["id"]?.toString() ?? "",
+
+      resourceType:
+          json["resourceType"]
+                  ?.toString() ??
+              "",
+
+      quantity:
+          (json["quantity"] as num?)
+                  ?.toDouble() ??
+              0,
+
+      pricePerUnit:
+          (json["pricePerUnit"] as num?)
+                  ?.toDouble() ??
+              0,
+
+      totalPrice:
+          (json["totalPrice"] as num?)
+                  ?.toDouble() ??
+              0,
+
+      commission:
+          (json["commission"] as num?)
+                  ?.toDouble() ??
+              0,
+
+      executedAt:
+          json["executedAt"] != null
+              ? DateTime.tryParse(
+                  json["executedAt"],
+                )
+              : null,
     );
   }
 }

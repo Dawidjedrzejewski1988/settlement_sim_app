@@ -1,13 +1,10 @@
 import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
-
 import 'screens/auth_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   Flame.images.prefix = 'assets/';
-
   runApp(const SettlementSimApp());
 }
 

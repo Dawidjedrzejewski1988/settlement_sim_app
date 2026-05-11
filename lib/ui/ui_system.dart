@@ -1,5 +1,3 @@
-// lib/ui/ui_system.dart
-
 import 'package:flutter/material.dart';
 
 class UiColors {

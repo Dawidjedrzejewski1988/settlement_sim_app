@@ -2,18 +2,13 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
-
 import '../game/settlement_game.dart';
-
 import '../api/services.dart';
 import '../api/models.dart';
-
 import '../logic/game_loader.dart';
 import '../logic/building_actions.dart';
-
 import '../controllers/game_data_controller.dart';
 import '../controllers/live_refresh_controller.dart';
-
 import '../widgets/top_hud.dart';
 import '../widgets/build_panel.dart';
 import '../widgets/building_side_panel.dart';
@@ -21,6 +16,11 @@ import '../widgets/build_confirm_dialog.dart';
 import '../widgets/market_panel.dart';
 import '../widgets/create_offer_dialog.dart';
 import '../widgets/policy_panel.dart';
+import '../widgets/industry_panel.dart';
+import '../widgets/quest_panel.dart';
+import '../widgets/ranking_panel.dart';
+import '../widgets/event_panel.dart';
+import '../widgets/economy_panel.dart';
 
 import '../ui/ui_system.dart';
 
@@ -40,12 +40,16 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   late SettlementGame game;
-
+  Settlement? settlementData;
   final buildingService = BuildingService();
   final settlementService = SettlementService();
   final eventService = EventService();
   final marketService = MarketService();
   final policyService = PolicyService();
+  final industryService = IndustryService();
+  final questService = QuestService();
+  final rankingService = RankingService();
+  final Set<String> knownEvents = {};
 
   late GameDataController dataController;
   late BuildingActions actions;
@@ -58,17 +62,24 @@ class _GameScreenState extends State<GameScreen> {
   List<Event> events = [];
   List<AvailableBuilding> availableBuildings = [];
   List<MarketOffer> marketOffers = [];
+  List<MarketHistoryEntry> marketHistory = [];
+  List<Industry> industries = [];
+  List<RankingEntry> ranking = [];
 
   Policy? policyData;
-
   String? selectedType;
   Building? selectedBuilding;
+  QuestResponse? questData;
 
+  bool showRanking = false;
+  bool showQuests = false;
   bool showBuildPanel = false;
   bool showMarket = false;
   bool showPolicy = false;
   bool loading = false;
   bool offlineChecked = false;
+  bool showIndustries = false;
+  bool showEconomy = false;
 
   double wood = 0;
   double plank = 0;
@@ -196,7 +207,11 @@ class _GameScreenState extends State<GameScreen> {
       text = e.response != null
           ? "Błąd ${e.response?.statusCode}"
           : (e.message ?? text);
+    } else {
+      text = e.toString();
     }
+
+    debugPrint(e.toString());
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -215,11 +230,15 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> loadSettlement() async {
     try {
+      final settlement = await settlementService.getSettlement();
+
       final data = await dataController.loadSettlement();
 
       if (!mounted) return;
 
       setState(() {
+        settlementData = settlement;
+
         wood = data["wood"];
         plank = data["plank"];
         berries = data["berries"];
@@ -250,6 +269,23 @@ class _GameScreenState extends State<GameScreen> {
 
       if (!mounted) return;
 
+      for (final e in data) {
+        if (!knownEvents.contains(e.id)) {
+          knownEvents.add(e.id);
+
+          ScaffoldMessenger.of(context)
+              .showSnackBar(
+            SnackBar(
+              backgroundColor:
+                  UiColors.gold,
+              content: Text(
+                "Nowe wydarzenie: ${e.type}",
+              ),
+            ),
+          );
+        }
+      }
+
       setState(() {
         events = data;
       });
@@ -262,9 +298,24 @@ class _GameScreenState extends State<GameScreen> {
 
       if (!mounted) return;
 
-    setState(() {
-      marketOffers = data;
-    });
+      setState(() {
+        marketOffers = data;
+      });
+    } catch (e) {
+      showError(e);
+    }
+  }
+
+  Future<void> loadMarketHistory() async {
+    try {
+      final data =
+          await marketService.getHistory();
+
+      if (!mounted) return;
+
+      setState(() {
+        marketHistory = data;
+      });
     } catch (e) {
       showError(e);
     }
@@ -272,10 +323,10 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> buyMarket(String id) async {
     try {
-    await marketService.buyOffer(
-      offerId: id,
-      quantity: 1,
-    );
+      await marketService.buyOffer(
+        offerId: id,
+        quantity: 1,
+      );
 
       await loadMarket();
       await loadAll();
@@ -306,6 +357,36 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  Future<void> loadRanking() async {
+    try {
+      final data =
+          await rankingService.getRanking();
+
+      if (!mounted) return;
+
+      setState(() {
+        ranking = data;
+      });
+    } catch (e) {
+      showError(e);
+    }
+  }
+
+  Future<void> loadQuests() async {
+    try {
+      final data =
+          await questService.getQuests();
+
+      if (!mounted) return;
+
+      setState(() {
+        questData = data;
+      });
+    } catch (e) {
+      showError(e);
+    }
+  }
+
   Future<void> loadPolicy() async {
     try {
       final data = await policyService.getTaxPolicy();
@@ -314,6 +395,20 @@ class _GameScreenState extends State<GameScreen> {
 
       setState(() {
         policyData = data;
+      });
+    } catch (e) {
+      showError(e);
+    }
+  }
+
+  Future<void> loadIndustries() async {
+    try {
+      final data = await industryService.getIndustries();
+
+      if (!mounted) return;
+
+      setState(() {
+        industries = data;
       });
     } catch (e) {
       showError(e);
@@ -523,6 +618,9 @@ class _GameScreenState extends State<GameScreen> {
             morale: morale,
             population: population,
           ),
+
+          EventPanel(events: events),
+
           if (showBuildPanel)
             BuildPanel(
               buildings: availableBuildings,
@@ -531,6 +629,7 @@ class _GameScreenState extends State<GameScreen> {
           if (showMarket)
             MarketPanel(
               offers: marketOffers,
+              history: marketHistory,
               onClose: () {
                 setState(() {
                   showMarket = false;
@@ -541,33 +640,67 @@ class _GameScreenState extends State<GameScreen> {
             ),
           if (showPolicy && policyData != null)
             PolicyPanel(
-              policy: {
-                "id": policyData!.id,
-                "title": policyData!.title,
-                "description": policyData!.description,
-                "options": policyData!.options
-                    .map((e) => {
-                          "id": e.id,
-                          "label": e.label,
-                        })
-                    .toList(),
-              },
+              policy: policyData!,
+              activeOptionId: settlementData?.activeTaxPolicy,
               onClose: () {
                 setState(() {
                   showPolicy = false;
                 });
               },
-              onChoose: choosePolicy,
+              onChoose: (id) async {
+                await choosePolicy(id);
+
+                if (!mounted) return;
+
+                setState(() {});
+              },
+            ),
+            if (showIndustries)
+            IndustryPanel(
+              industries: industries,
+              onClose: () {
+                setState(() {
+                  showIndustries = false;
+                });
+              },
+            ),
+            if (showQuests &&
+              questData != null)
+            QuestPanel(
+              quests: questData!,
+              onClose: () {
+                setState(() {
+                  showQuests = false;
+                });
+              },
+            ),
+            if (showRanking)
+            RankingPanel(
+              ranking: ranking,
+              onClose: () {
+                setState(() {
+                  showRanking = false;
+                });
+              },
+            ),
+            if (showEconomy && settlementData != null)
+            EconomyPanel(
+              settlement: settlementData!,
+              woodPerSec: woodPerSec,
+              plankPerSec: plankPerSec,
+              berriesPerSec: berriesPerSec,
+              stonePerSec: stonePerSec,
+              breadPerSec: breadPerSec,
+              moneyPerSec: moneyPerSec,
+              onClose: () {
+                setState(() {
+                  showEconomy = false;
+                });
+              },
             ),
           if (selectedBuilding != null)
             BuildingSidePanel(
-              building: {
-                "id": selectedBuilding!.id,
-                "type": selectedBuilding!.type,
-                "workers": selectedBuilding!.workers,
-                "status": selectedBuilding!.status,
-                "maxWorkers": selectedBuilding!.maxWorkers,
-              },
+              building: selectedBuilding!,
               timer: getTimer(),
               onUpgrade: upgradeBuilding,
               onDelete: deleteBuilding,
@@ -619,6 +752,7 @@ class _GameScreenState extends State<GameScreen> {
                     color: UiColors.gold,
                     onTap: () async {
                       await loadMarket();
+                      await loadMarketHistory();
 
                       if (!mounted) return;
 
@@ -635,7 +769,7 @@ class _GameScreenState extends State<GameScreen> {
                 SizedBox(
                   width: 180,
                   child: UiButton(
-                    text: "Podatki",
+                    text: "Polityka",
                     icon: Icons.account_balance,
                     color: UiColors.blue,
                     onTap: () async {
@@ -647,6 +781,110 @@ class _GameScreenState extends State<GameScreen> {
                         showPolicy = true;
                         showMarket = false;
                         showBuildPanel = false;
+                        selectedBuilding = null;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                SizedBox(
+                  width: 180,
+                  child: UiButton(
+                    text: "Technologie",
+                    icon: Icons.science,
+                    color: UiColors.gold,
+                    onTap: () async {
+                      await loadIndustries();
+
+                      if (!mounted) return;
+
+                      setState(() {
+                        showIndustries = true;
+
+                        showPolicy = false;
+                        showMarket = false;
+                        showBuildPanel = false;
+
+                        selectedBuilding = null;
+                      });
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                SizedBox(
+                  width: 180,
+                  child: UiButton(
+                    text: "Zadania",
+                    icon: Icons.flag,
+                    color: UiColors.green,
+                    onTap: () async {
+                      await loadQuests();
+
+                      if (!mounted) return;
+
+                      setState(() {
+                        showQuests = true;
+
+                        showIndustries = false;
+                        showPolicy = false;
+                        showMarket = false;
+                        showBuildPanel = false;
+
+                        selectedBuilding = null;
+                      });
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                SizedBox(
+                  width: 180,
+                  child: UiButton(
+                    text: "Ranking",
+                    icon: Icons.leaderboard,
+                    color: UiColors.blue,
+                    onTap: () async {
+                      await loadRanking();
+
+                      if (!mounted) return;
+
+                      setState(() {
+                        showRanking = true;
+
+                        showQuests = false;
+                        showIndustries = false;
+                        showPolicy = false;
+                        showMarket = false;
+                        showBuildPanel = false;
+
+                        selectedBuilding = null;
+                      });
+                    },
+                  ),
+                ),
+                
+                const SizedBox(height: 10),
+
+                SizedBox(
+                  width: 180,
+                  child: UiButton(
+                    text: "Ekonomia",
+                    icon: Icons.bar_chart,
+                    color: UiColors.blue,
+                    onTap: () {
+                      setState(() {
+                        showEconomy = true;
+
+                        showQuests = false;
+                        showIndustries = false;
+                        showPolicy = false;
+                        showMarket = false;
+                        showBuildPanel = false;
+
                         selectedBuilding = null;
                       });
                     },
