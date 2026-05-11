@@ -1,27 +1,29 @@
 import 'dart:ui';
+
 import 'package:flame/components.dart';
 
 import '../constants/game_constants.dart';
 import '../utils/iso_utils.dart';
 
-class MapComponent extends PositionComponent {
+class GridComponent extends PositionComponent {
   final int mapW;
   final int mapH;
 
-  Picture? _picture;
+  bool visibleGrid = false;
 
-  MapComponent({
+  GridComponent({
     required this.mapW,
     required this.mapH,
   });
 
   @override
-  Future<void> onLoad() async {
-    final recorder = PictureRecorder();
-    final canvas = Canvas(recorder);
+  void render(Canvas canvas) {
+    if (!visibleGrid) return;
 
-    final fill = Paint()
-      ..color = const Color(0xFF7AAE4E);
+    final border = Paint()
+      ..color = const Color(0x88FFFFFF)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
 
     for (int y = 0; y < mapH; y++) {
       for (int x = 0; x < mapW; x++) {
@@ -43,17 +45,8 @@ class MapComponent extends PositionComponent {
           )
           ..close();
 
-        canvas.drawPath(path, fill);
+        canvas.drawPath(path, border);
       }
-    }
-
-    _picture = recorder.endRecording();
-  }
-
-  @override
-  void render(Canvas canvas) {
-    if (_picture != null) {
-      canvas.drawPicture(_picture!);
     }
   }
 }

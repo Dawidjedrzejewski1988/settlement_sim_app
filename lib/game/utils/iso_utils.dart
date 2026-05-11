@@ -11,10 +11,14 @@ class IsoUtils {
 
   static Vector2 worldToTile(double x, double y) {
     final tx =
-        ((y / GameConstants.tileH) + (x / GameConstants.tileW)).floorToDouble();
+        ((y / GameConstants.tileH) +
+                (x / GameConstants.tileW))
+            .floorToDouble();
 
     final ty =
-        ((y / GameConstants.tileH) - (x / GameConstants.tileW)).floorToDouble();
+        ((y / GameConstants.tileH) -
+                (x / GameConstants.tileW))
+            .floorToDouble();
 
     return Vector2(tx, ty);
   }

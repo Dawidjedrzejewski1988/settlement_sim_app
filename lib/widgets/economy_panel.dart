@@ -27,65 +27,72 @@ class EconomyPanel extends StatelessWidget {
     required this.onClose,
   });
 
-  String icon(String code) {
+  Map<String, String> resourceData(
+    String code,
+  ) {
     switch (code) {
       case "Wood":
-        return "🪵";
+        return {
+          "name": "Drewno",
+          "icon":
+              "assets/icons/resources/wood_icon.png",
+        };
 
       case "Stone":
-        return "🪨";
+        return {
+          "name": "Kamień",
+          "icon":
+              "assets/icons/resources/stone_icon.png",
+        };
 
       case "Bread":
-        return "🍞";
+        return {
+          "name": "Chleb",
+          "icon":
+              "assets/icons/resources/bread_icon.png",
+        };
 
       case "Plank":
-        return "🪚";
+        return {
+          "name": "Deski",
+          "icon":
+              "assets/icons/resources/plank_icon.png",
+        };
 
       case "Berries":
-        return "🍓";
+        return {
+          "name": "Jagody",
+          "icon":
+              "assets/icons/resources/berries_icon.png",
+        };
 
       case "StoneTools":
-        return "🔨";
+        return {
+          "name": "Narzędzia",
+          "icon":
+              "assets/icons/resources/stonetools_icon.png",
+        };
 
       case "Wheat":
-        return "🌾";
+        return {
+          "name": "Pszenica",
+          "icon":
+              "assets/icons/resources/wheat_icon.png",
+        };
 
       case "Flour":
-        return "⚪";
+        return {
+          "name": "Mąka",
+          "icon":
+              "assets/icons/resources/flour_icon.png",
+        };
 
       default:
-        return "📦";
-    }
-  }
-
-  String name(String code) {
-    switch (code) {
-      case "Wood":
-        return "Drewno";
-
-      case "Stone":
-        return "Kamień";
-
-      case "Bread":
-        return "Chleb";
-
-      case "Plank":
-        return "Deski";
-
-      case "Berries":
-        return "Jagody";
-
-      case "StoneTools":
-        return "Narzędzia";
-
-      case "Wheat":
-        return "Pszenica";
-
-      case "Flour":
-        return "Mąka";
-
-      default:
-        return code;
+        return {
+          "name": code,
+          "icon":
+              "assets/icons/resources/wood_icon.png",
+        };
     }
   }
 
@@ -115,15 +122,20 @@ class EconomyPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        width: 1050,
-        height: 760,
-        padding: const EdgeInsets.all(24),
+        width: 980,
+        height: 720,
+
+        padding: const EdgeInsets.all(22),
+
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(26),
+          borderRadius:
+              BorderRadius.circular(26),
+
           border: Border.all(
             color: UiColors.gold,
             width: 2,
           ),
+
           gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -133,6 +145,7 @@ class EconomyPanel extends StatelessWidget {
               Color(0xFF1F0D04),
             ],
           ),
+
           boxShadow: const [
             BoxShadow(
               color: Colors.black54,
@@ -141,23 +154,60 @@ class EconomyPanel extends StatelessWidget {
             ),
           ],
         ),
+
         child: Column(
           crossAxisAlignment:
               CrossAxisAlignment.start,
+
           children: [
+            /// ===== HEADER =====
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    "Ekonomia Osady",
-                    style: UiText.title(
-                      size: 32,
-                    ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 54,
+                        height: 54,
+                        padding:
+                            const EdgeInsets.all(8),
+
+                        decoration: BoxDecoration(
+                          color: Colors.black
+                              .withValues(
+                            alpha: 0.18,
+                          ),
+
+                          borderRadius:
+                              BorderRadius.circular(
+                            14,
+                          ),
+                        ),
+
+                        child: Image.asset(
+                          "assets/icons/stats/gold_icon.png",
+
+                          fit: BoxFit.contain,
+
+                          filterQuality:
+                              FilterQuality.none,
+                        ),
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      Text(
+                        "Ekonomia Osady",
+                        style:
+                            UiText.title(size: 30),
+                      ),
+                    ],
                   ),
                 ),
 
                 IconButton(
                   onPressed: onClose,
+
                   icon: const Icon(
                     Icons.close,
                     color: Colors.white,
@@ -166,170 +216,201 @@ class EconomyPanel extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 22),
 
             Text(
-              "Zasoby",
+              "Produkcja surowców",
               style: UiText.title(
-                size: 24,
+                size: 22,
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
 
             Expanded(
-              child: ListView.separated(
-                physics:
-                    const BouncingScrollPhysics(),
-                itemCount:
-                    settlement.resources.length,
-                separatorBuilder:
-                    (_, __) =>
-                        const SizedBox(height: 14),
-                itemBuilder: (_, i) {
-                  final r =
-                      settlement.resources[i];
+            child: GridView.builder(
+              physics:
+                  const BouncingScrollPhysics(),
 
-                  final perHour =
-                      rate(r.code);
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
 
-                  return Container(
-                    padding:
-                        const EdgeInsets.symmetric(
-                      horizontal: 22,
-                      vertical: 18,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black
-                          .withValues(
-                        alpha: 0.18,
-                      ),
-                      borderRadius:
-                          BorderRadius.circular(
-                        22,
-                      ),
-                      border: Border.all(
-                        color: Colors.white10,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 72,
-                          height: 72,
-                          alignment:
-                              Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Colors.black
-                                .withValues(
-                              alpha: 0.18,
-                            ),
-                            borderRadius:
-                                BorderRadius.circular(
-                              18,
-                            ),
-                          ),
-                          child: Text(
-                            icon(r.code),
-                            style:
-                                const TextStyle(
-                              fontSize: 38,
-                            ),
-                          ),
-                        ),
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
 
-                        const SizedBox(width: 18),
-
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment
-                                    .start,
-                            children: [
-                              Text(
-                                name(r.code),
-                                style:
-                                    UiText.title(
-                                  size: 22,
-                                ),
-                              ),
-
-                              const SizedBox(
-                                height: 6,
-                              ),
-
-                              Text(
-                                r.amount
-                                    .toStringAsFixed(
-                                  0,
-                                ),
-                                style:
-                                    UiText.value(
-                                  size: 28,
-                                  color:
-                                      UiColors
-                                          .gold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        Container(
-                          padding:
-                              const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 12,
-                          ),
-                          decoration:
-                              BoxDecoration(
-                            color: Colors.black
-                                .withValues(
-                              alpha: 0.18,
-                            ),
-                            borderRadius:
-                                BorderRadius.circular(
-                              16,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                "${perHour >= 0 ? "+" : ""}${perHour.toStringAsFixed(1)}/h",
-                                style:
-                                    UiText.value(
-                                  size: 20,
-                                  color:
-                                      perHour >= 0
-                                          ? Colors
-                                              .greenAccent
-                                          : Colors
-                                              .redAccent,
-                                ),
-                              ),
-
-                              const SizedBox(
-                                height: 4,
-                              ),
-
-                              Text(
-                                "na godzinę",
-                                style:
-                                    UiText.body(
-                                  size: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                childAspectRatio: 4.8,
               ),
+
+              itemCount:
+                  settlement.resources.length,
+
+              itemBuilder: (_, i) {
+                final r =
+                    settlement.resources[i];
+
+                final data =
+                    resourceData(r.code);
+
+                final perHour =
+                    rate(r.code);
+
+                final positive =
+                    perHour >= 0;
+
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(
+                    horizontal: 14,
+                  ),
+
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(
+                      alpha: 0.18,
+                    ),
+
+                    borderRadius:
+                        BorderRadius.circular(16),
+
+                    border: Border.all(
+                      color: Colors.white10,
+                    ),
+                  ),
+
+                  child: Row(
+                    children: [
+                      /// ===== IKONA =====
+                      Container(
+                        width: 46,
+                        height: 46,
+
+                        padding:
+                            const EdgeInsets.all(4),
+
+                        decoration: BoxDecoration(
+                          color: Colors.black
+                              .withValues(
+                            alpha: 0.18,
+                          ),
+
+                          borderRadius:
+                              BorderRadius.circular(
+                            12,
+                          ),
+                        ),
+
+                        child: Image.asset(
+                          data["icon"]!,
+
+                          fit: BoxFit.contain,
+
+                          filterQuality:
+                              FilterQuality.none,
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      /// ===== NAZWA =====
+                      Expanded(
+                        child: Text(
+                          data["name"]!,
+
+                          overflow:
+                              TextOverflow.ellipsis,
+
+                          style: UiText.title(
+                            size: 18,
+                          ),
+                        ),
+                      ),
+
+                      /// ===== ILOŚĆ =====
+                      SizedBox(
+                        width: 52,
+
+                        child: Text(
+                          r.amount
+                              .toStringAsFixed(0),
+
+                          textAlign:
+                              TextAlign.center,
+
+                          style: UiText.value(
+                            size: 22,
+                            color: UiColors.gold,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      /// ===== PRODUKCJA =====
+                      Container(
+                        padding:
+                            const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+
+                        decoration:
+                            BoxDecoration(
+                          color: Colors.black
+                              .withValues(
+                            alpha: 0.18,
+                          ),
+
+                          borderRadius:
+                              BorderRadius.circular(
+                            12,
+                          ),
+                        ),
+
+                        child: Row(
+                          children: [
+                            Icon(
+                              positive
+                                  ? Icons
+                                      .trending_up
+                                  : Icons
+                                      .trending_down,
+
+                              size: 15,
+
+                              color: positive
+                                  ? Colors
+                                      .greenAccent
+                                  : Colors
+                                      .redAccent,
+                            ),
+
+                            const SizedBox(
+                              width: 4,
+                            ),
+
+                            Text(
+                              "${positive ? "+" : ""}${perHour.toStringAsFixed(1)}/h",
+
+                              style:
+                                  UiText.value(
+                                size: 16,
+
+                                color: positive
+                                    ? Colors
+                                        .greenAccent
+                                    : Colors
+                                        .redAccent,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
+          ),
           ],
         ),
       ),

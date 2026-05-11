@@ -42,26 +42,34 @@ class _MarketPanelState extends State<MarketPanel> {
     "Flour",
   ];
 
-  String icon(String type) {
+  String iconPath(String type) {
     switch (type) {
       case "Wood":
-        return "🪵";
+        return "assets/icons/resources/wood_icon.png";
+
       case "Stone":
-        return "🪨";
+        return "assets/icons/resources/stone_icon.png";
+
       case "Bread":
-        return "🍞";
+        return "assets/icons/resources/bread_icon.png";
+
       case "Plank":
-        return "🪚";
+        return "assets/icons/resources/plank_icon.png";
+
       case "Berries":
-        return "🍓";
+        return "assets/icons/resources/berries_icon.png";
+
       case "StoneTools":
-        return "🔨";
+        return "assets/icons/resources/stonetools_icon.png";
+
       case "Wheat":
-        return "🌾";
+        return "assets/icons/resources/wheat_icon.png";
+
       case "Flour":
-        return "⚪";
+        return "assets/icons/resources/flour_icon.png";
+
       default:
-        return "📦";
+        return "assets/icons/resources/wood_icon.png";
     }
   }
 
@@ -69,22 +77,31 @@ class _MarketPanelState extends State<MarketPanel> {
     switch (type) {
       case "Wszystkie":
         return "Wszystkie";
+
       case "Wood":
         return "Drewno";
+
       case "Stone":
         return "Kamień";
+
       case "Bread":
         return "Chleb";
+
       case "Plank":
         return "Deski";
+
       case "Berries":
         return "Jagody";
+
       case "StoneTools":
         return "Narzędzia";
+
       case "Wheat":
         return "Pszenica";
+
       case "Flour":
         return "Mąka";
+
       default:
         return type;
     }
@@ -104,7 +121,10 @@ class _MarketPanelState extends State<MarketPanel> {
         padding: const EdgeInsets.all(22),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(26),
-          border: Border.all(color: UiColors.gold, width: 2),
+          border: Border.all(
+            color: UiColors.gold,
+            width: 2,
+          ),
           gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -276,6 +296,26 @@ class _MarketPanelState extends State<MarketPanel> {
     );
   }
 
+  Widget resourceIcon(String type) {
+    return Container(
+      width: 58,
+      height: 58,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.22),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.06),
+        ),
+      ),
+      child: Image.asset(
+        iconPath(type),
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.none,
+      ),
+    );
+  }
+
   Widget buildOffers(List<MarketOffer> filteredOffers) {
     if (filteredOffers.isEmpty) {
       return Center(
@@ -304,19 +344,7 @@ class _MarketPanelState extends State<MarketPanel> {
           ),
           child: Row(
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Text(
-                  icon(o.resourceType),
-                  style: const TextStyle(fontSize: 24),
-                ),
-              ),
+              resourceIcon(o.resourceType),
 
               const SizedBox(width: 14),
 
@@ -329,7 +357,7 @@ class _MarketPanelState extends State<MarketPanel> {
                       style: UiText.title(size: 18),
                     ),
 
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
 
                     Row(
                       children: [
@@ -338,7 +366,7 @@ class _MarketPanelState extends State<MarketPanel> {
                           style: UiText.body(size: 14),
                         ),
 
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 14),
 
                         Text(
                           "${o.finalPrice.toStringAsFixed(0)} zł/szt.",
@@ -395,10 +423,7 @@ class _MarketPanelState extends State<MarketPanel> {
           ),
           child: Row(
             children: [
-              Text(
-                icon(h.resourceType),
-                style: const TextStyle(fontSize: 28),
-              ),
+              resourceIcon(h.resourceType),
 
               const SizedBox(width: 14),
 

@@ -1,21 +1,8 @@
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/collisions.dart';
-
+import '../utils/sprite_cache.dart';
 import '../data/building_definitions.dart';
-
-/// 🔥 CACHE SPRITE (GLOBALNY)
-class SpriteCache {
-  static final Map<String, Sprite> _cache = {};
-
-  static Future<Sprite> get(String path) async {
-    if (_cache.containsKey(path)) return _cache[path]!;
-
-    final sprite = await Sprite.load(path);
-    _cache[path] = sprite;
-    return sprite;
-  }
-}
 
 class BuildingComponent extends SpriteComponent
     with TapCallbacks, CollisionCallbacks {
@@ -36,7 +23,6 @@ class BuildingComponent extends SpriteComponent
     final type = data["type"];
     final def = BuildingDefinitions.get(type);
 
-    /// 🔥 zamiast Sprite.load
     sprite = await SpriteCache.get(
       _getSprite(type),
     );

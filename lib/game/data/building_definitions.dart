@@ -24,103 +24,115 @@ class BuildingDefinitions {
       width: 2,
       height: 2,
       offsetX: 0,
-      offsetY: -8,
+      offsetY: 0,
       spriteW: 220,
       spriteH: 220,
     ),
+
     "Cottage": BuildingVisualData(
       width: 2,
       height: 2,
       offsetX: 0,
-      offsetY: -8,
+      offsetY: 0,
       spriteW: 200,
       spriteH: 200,
     ),
+
     "LumberCamp": BuildingVisualData(
       width: 2,
       height: 2,
       offsetX: 0,
-      offsetY: -10,
+      offsetY: 0,
       spriteW: 230,
       spriteH: 230,
     ),
+
     "GatherersCamp": BuildingVisualData(
       width: 2,
       height: 2,
       offsetX: 0,
-      offsetY: -10,
+      offsetY: 0,
       spriteW: 230,
       spriteH: 230,
     ),
+
     "Warehouse": BuildingVisualData(
       width: 3,
       height: 3,
       offsetX: 0,
-      offsetY: -18,
+      offsetY: 0,
       spriteW: 320,
       spriteH: 280,
     ),
+
     "Market": BuildingVisualData(
       width: 3,
       height: 3,
       offsetX: 0,
-      offsetY: -18,
+      offsetY: 0,
       spriteW: 320,
       spriteH: 280,
     ),
+
     "Tavern": BuildingVisualData(
       width: 3,
       height: 3,
       offsetX: 0,
-      offsetY: -18,
+      offsetY: 0,
       spriteW: 320,
       spriteH: 280,
     ),
+
     "Sawmill": BuildingVisualData(
       width: 2,
       height: 2,
       offsetX: 0,
-      offsetY: -10,
+      offsetY: 0,
       spriteW: 240,
       spriteH: 220,
     ),
+
     "Quarry": BuildingVisualData(
       width: 2,
       height: 2,
       offsetX: 0,
-      offsetY: -10,
+      offsetY: 0,
       spriteW: 230,
       spriteH: 220,
     ),
+
     "Farm": BuildingVisualData(
       width: 3,
       height: 3,
       offsetX: 0,
-      offsetY: -16,
+      offsetY: 0,
       spriteW: 320,
       spriteH: 280,
     ),
+
     "Mill": BuildingVisualData(
       width: 2,
       height: 2,
       offsetX: 0,
-      offsetY: -14,
+      offsetY: 0,
       spriteW: 240,
       spriteH: 240,
     ),
+
     "Bakery": BuildingVisualData(
       width: 2,
       height: 2,
       offsetX: 0,
-      offsetY: -14,
+      offsetY: 0,
       spriteW: 240,
       spriteH: 240,
     ),
+
     "Workshop": BuildingVisualData(
       width: 2,
       height: 2,
       offsetX: 0,
-      offsetY: -14,
+      offsetY: 0,
       spriteW: 240,
       spriteH: 240,
     ),
@@ -134,7 +146,7 @@ class BuildingDefinitions {
           width: 2,
           height: 2,
           offsetX: 0,
-          offsetY: -10,
+          offsetY: 0,
           spriteW: 220,
           spriteH: 220,
         );

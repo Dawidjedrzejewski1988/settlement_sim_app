@@ -5,10 +5,7 @@ import 'package:flame/game.dart';
 import '../game/settlement_game.dart';
 import '../api/services.dart';
 import '../api/models.dart';
-import '../logic/game_loader.dart';
-import '../logic/building_actions.dart';
-import '../controllers/game_data_controller.dart';
-import '../controllers/live_refresh_controller.dart';
+
 import '../widgets/top_hud.dart';
 import '../widgets/build_panel.dart';
 import '../widgets/building_side_panel.dart';
@@ -51,11 +48,6 @@ class _GameScreenState extends State<GameScreen> {
   final rankingService = RankingService();
   final Set<String> knownEvents = {};
 
-  late GameDataController dataController;
-  late BuildingActions actions;
-
-  final liveRefresh = LiveRefreshController();
-
   Timer? eventTimer;
   Timer? hudTimer;
 
@@ -70,7 +62,9 @@ class _GameScreenState extends State<GameScreen> {
   String? selectedType;
   Building? selectedBuilding;
   QuestResponse? questData;
+  Timer? refreshTimer;
 
+  bool isRefreshing = false;
   bool showRanking = false;
   bool showQuests = false;
   bool showBuildPanel = false;
@@ -81,35 +75,26 @@ class _GameScreenState extends State<GameScreen> {
   bool showIndustries = false;
   bool showEconomy = false;
 
-  double wood = 0;
-  double plank = 0;
-  double berries = 0;
-  double stone = 0;
-  double bread = 0;
-
-  double money = 0;
-  double morale = 0;
-
-  int population = 0;
-
   double woodPerSec = 0;
   double plankPerSec = 0;
   double berriesPerSec = 0;
   double stonePerSec = 0;
   double breadPerSec = 0;
   double moneyPerSec = 0;
+  double resource(String code) {
+    if (settlementData == null) return 0;
 
+    try {
+      return settlementData!.resources
+          .firstWhere((r) => r.code == code)
+          .amount;
+    } catch (_) {
+      return 0;
+    }
+  }
   @override
   void initState() {
     super.initState();
-
-    dataController = GameDataController(
-      settlementService: settlementService,
-      buildingService: buildingService,
-      eventService: eventService,
-    );
-
-    actions = BuildingActions(buildingService);
 
     game = SettlementGame(
       token: widget.token,
@@ -121,9 +106,18 @@ class _GameScreenState extends State<GameScreen> {
     loadAll();
     loadEvents();
 
-    liveRefresh.start(
-      onRefresh: () async {
-        await loadAll();
+    refreshTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) async {
+        if (isRefreshing) return;
+
+        isRefreshing = true;
+
+        try {
+          await loadAll();
+        } finally {
+          isRefreshing = false;
+        }
       },
     );
 
@@ -140,22 +134,61 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void dispose() {
-    liveRefresh.stop();
+    refreshTimer?.cancel();
     eventTimer?.cancel();
     hudTimer?.cancel();
     super.dispose();
   }
 
   void tickHud() {
-    if (!mounted) return;
+    if (!mounted || settlementData == null) return;
 
     setState(() {
-      wood += woodPerSec;
-      plank += plankPerSec;
-      berries += berriesPerSec;
-      stone += stonePerSec;
-      bread += breadPerSec;
-      money += moneyPerSec;
+      settlementData = Settlement(
+        id: settlementData!.id,
+        name: settlementData!.name,
+        resources: settlementData!.resources.map((r) {
+          double add = 0;
+
+          switch (r.code) {
+            case "Wood":
+              add = woodPerSec;
+              break;
+
+            case "Plank":
+              add = plankPerSec;
+              break;
+
+            case "Berries":
+              add = berriesPerSec;
+              break;
+
+            case "Stone":
+              add = stonePerSec;
+              break;
+
+            case "Bread":
+              add = breadPerSec;
+              break;
+          }
+
+          return Resource(
+            code: r.code,
+            name: r.name,
+            amount: r.amount + add,
+          );
+        }).toList(),
+        storageCapacity: settlementData!.storageCapacity,
+        storageUsed: settlementData!.storageUsed,
+        storageFree: settlementData!.storageFree,
+        population: settlementData!.population,
+        morale: settlementData!.morale,
+        money: settlementData!.money + moneyPerSec,
+        moraleChangePerHour: settlementData!.moraleChangePerHour,
+        moraleBreakdown: settlementData!.moraleBreakdown,
+        industries: settlementData!.industries,
+        activeTaxPolicy: settlementData!.activeTaxPolicy,
+      );
     });
   }
 
@@ -230,30 +263,20 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> loadSettlement() async {
     try {
-      final settlement = await settlementService.getSettlement();
-
-      final data = await dataController.loadSettlement();
+      final settlement =
+          await settlementService.getSettlement();
 
       if (!mounted) return;
 
       setState(() {
         settlementData = settlement;
-
-        wood = data["wood"];
-        plank = data["plank"];
-        berries = data["berries"];
-        stone = data["stone"];
-        bread = data["bread"];
-        money = data["money"];
-        morale = data["morale"];
-        population = data["population"];
       });
     } catch (_) {}
   }
 
   Future<void> loadAvailableBuildings() async {
     try {
-      final data = await dataController.loadBuildings();
+      final data = await buildingService.getAvailableBuildings();
 
       if (!mounted) return;
 
@@ -265,7 +288,7 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> loadEvents() async {
     try {
-      final data = await dataController.loadEvents();
+      final data = await eventService.getEvents();
 
       if (!mounted) return;
 
@@ -437,10 +460,17 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   int getTimer() {
-    return GameLoader.getTimer(
-      building: selectedBuilding,
-      events: events,
-    );
+    if (selectedBuilding == null) return 0;
+
+    for (final e in events) {
+      if ((e.scope ?? "")
+              .contains(selectedBuilding!.id) &&
+          e.remainingSeconds > 0) {
+        return e.remainingSeconds;
+      }
+    }
+
+    return 0;
   }
 
   void openBuildingPanel(Map data) {
@@ -476,9 +506,9 @@ class _GameScreenState extends State<GameScreen> {
                 })
             .toList(),
       },
-      wood: wood,
-      stone: stone,
-      money: money,
+      wood: resource("Wood"),
+      stone: resource("Stone"),
+      money: settlementData?.money ?? 0,
     );
 
     if (ok != true) return;
@@ -488,10 +518,10 @@ class _GameScreenState extends State<GameScreen> {
         loading = true;
       });
 
-      await actions.build(
+      await buildingService.buildBuilding(
         type: selectedType!,
-        x: x,
-        y: y,
+        tileX: x,
+        tileY: y,
       );
 
       selectedType = null;
@@ -518,8 +548,8 @@ class _GameScreenState extends State<GameScreen> {
         loading = true;
       });
 
-      actions.upgrade(
-        id: selectedBuilding!.id,
+      await buildingService.upgrade(
+        selectedBuilding!.id,
       );
 
       selectedBuilding = null;
@@ -544,8 +574,8 @@ class _GameScreenState extends State<GameScreen> {
         loading = true;
       });
 
-      actions.delete(
-        id: selectedBuilding!.id,
+      await buildingService.delete(
+        selectedBuilding!.id,
       );
 
       selectedBuilding = null;
@@ -566,8 +596,8 @@ class _GameScreenState extends State<GameScreen> {
     if (selectedBuilding == null) return;
 
     try {
-      actions.workers(
-        id: selectedBuilding!.id,
+      await buildingService.updateWorkers(
+        buildingId: selectedBuilding!.id,
         workers: workers,
       );
 
@@ -609,14 +639,27 @@ class _GameScreenState extends State<GameScreen> {
             child: GameWidget(game: game),
           ),
           TopHud(
-            wood: wood,
-            plank: plank,
-            berries: berries,
-            stone: stone,
-            bread: bread,
-            money: money,
-            morale: morale,
-            population: population,
+            wood: resource("Wood"),
+            plank: resource("Plank"),
+            berries: resource("Berries"),
+            stone: resource("Stone"),
+            bread: resource("Bread"),
+
+            flour: resource("Flour"),
+            wheat: resource("Wheat"),
+            stoneTools: resource("StoneTools"),
+
+            money: settlementData?.money ?? 0,
+            morale: settlementData?.morale ?? 0,
+
+            moralePerHour:
+                settlementData?.moraleChangePerHour ?? 0,
+
+            moraleBreakdown:
+                settlementData?.moraleBreakdown ?? [],
+
+            population:
+                settlementData?.population ?? 0,
           ),
 
           EventPanel(events: events),
@@ -866,7 +909,7 @@ class _GameScreenState extends State<GameScreen> {
                     },
                   ),
                 ),
-                
+
                 const SizedBox(height: 10),
 
                 SizedBox(

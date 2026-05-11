@@ -12,6 +12,7 @@ import 'components/build_preview_component.dart';
 import 'components/building_component.dart';
 import 'components/preview_tile.dart';
 import 'components/map_component.dart';
+import 'components/grid_component.dart';
 
 import 'systems/camera_system.dart';
 import 'systems/map_system.dart';
@@ -51,6 +52,7 @@ class SettlementGame extends FlameGame
 
   late PreviewTile preview;
   late BuildPreviewComponent buildPreview;
+  late GridComponent grid;
 
   String? selectedBuildType;
 
@@ -99,6 +101,13 @@ class SettlementGame extends FlameGame
         mapH: mapH,
       ),
     );
+
+    grid = GridComponent(
+      mapW: mapW,
+      mapH: mapH,
+    );
+
+    world.add(grid);
 
     preview = PreviewTile()..visible = false;
     world.add(preview);
@@ -167,8 +176,8 @@ class SettlementGame extends FlameGame
           BuildingComponent(
             data: b.toJson(),
             position: Vector2(
-              pos.x + 64 + def.offsetX,
-              pos.y + 64 + def.offsetY,
+              pos.x + def.offsetX,
+              pos.y + GameConstants.tileH + def.offsetY,
             ),
             onTapBuilding: onBuildingTap,
           ),
@@ -252,7 +261,11 @@ class SettlementGame extends FlameGame
 
     final pos = IsoUtils.tileToWorld(tx, ty);
 
-    preview.position = pos;
+    preview.position = Vector2(
+  pos.x +
+      ((def.width - 1) * GameConstants.tileW / 2),
+  pos.y,
+);
     preview.tileX = tx;
     preview.tileY = ty;
     preview.widthTiles = def.width;
@@ -261,8 +274,8 @@ class SettlementGame extends FlameGame
     preview.visible = true;
 
     buildPreview.position = Vector2(
-      pos.x + 64 + def.offsetX,
-      pos.y + 64 + def.offsetY,
+      pos.x + (GameConstants.tileW / 2) + def.offsetX,
+      pos.y + GameConstants.tileH + def.offsetY,
     );
 
     buildPreview.setOpacity(
@@ -332,6 +345,8 @@ class SettlementGame extends FlameGame
 
   void toggleGrid(bool state) {
     buildMode = state;
+
+    grid.visibleGrid = state;
 
     preview.visible = state;
 

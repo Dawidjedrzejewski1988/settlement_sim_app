@@ -1,5 +1,6 @@
 import 'package:flame/components.dart';
 import '../data/building_definitions.dart';
+import '../utils/sprite_cache.dart';
 
 class BuildPreviewComponent extends PositionComponent {
   SpriteComponent? preview;
@@ -9,7 +10,7 @@ class BuildPreviewComponent extends PositionComponent {
 
     final def = BuildingDefinitions.get(type);
 
-    final sprite = await Sprite.load(_getSprite(type));
+    final sprite = await SpriteCache.get(_getSprite(type),);
 
     preview = SpriteComponent(
       sprite: sprite,

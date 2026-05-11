@@ -37,4 +37,6 @@ flutter:
     - assets/tiles/
     - assets/buildings/
     - assets/icons/
+    - assets/icons/resources/
+    - assets/icons/stats/
     - assets/npc/
