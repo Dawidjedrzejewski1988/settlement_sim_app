@@ -11,7 +11,6 @@ import '../widgets/build_panel.dart';
 import '../widgets/building_side_panel.dart';
 import '../widgets/build_confirm_dialog.dart';
 import '../widgets/market_panel.dart';
-import '../widgets/create_offer_dialog.dart';
 import '../widgets/policy_panel.dart';
 import '../widgets/industry_panel.dart';
 import '../widgets/quest_panel.dart';
@@ -53,12 +52,14 @@ class _GameScreenState extends State<GameScreen> {
 
   List<Event> events = [];
   List<AvailableBuilding> availableBuildings = [];
-  List<MarketOffer> marketOffers = [];
+  List<MarketResource> marketResources = [];
   List<MarketHistoryEntry> marketHistory = [];
   List<Industry> industries = [];
   List<RankingEntry> ranking = [];
 
-  Policy? policyData;
+  Policy? taxPolicy;
+  Policy? foodPolicy;
+  Policy? workPolicy;
   String? selectedType;
   Building? selectedBuilding;
   QuestResponse? questData;
@@ -85,17 +86,26 @@ class _GameScreenState extends State<GameScreen> {
     if (settlementData == null) return 0;
 
     try {
-      return settlementData!.resources
-          .firstWhere((r) => r.code == code)
-          .amount;
+      return settlementData!.resources.firstWhere((r) => r.code == code).amount;
     } catch (_) {
       return 0;
     }
   }
+
+  void closeAllPanels() {
+    showBuildPanel = false;
+    showMarket = false;
+    showPolicy = false;
+    showIndustries = false;
+    showQuests = false;
+    showRanking = false;
+    showEconomy = false;
+    selectedBuilding = null;
+  }
+
   @override
   void initState() {
     super.initState();
-
     game = SettlementGame(
       token: widget.token,
       settlementId: widget.settlementId,
@@ -188,6 +198,8 @@ class _GameScreenState extends State<GameScreen> {
         moraleBreakdown: settlementData!.moraleBreakdown,
         industries: settlementData!.industries,
         activeTaxPolicy: settlementData!.activeTaxPolicy,
+        activeFoodPolicy: settlementData!.activeFoodPolicy,
+        activeWorkPolicy: settlementData!.activeWorkPolicy,
       );
     });
   }
@@ -237,9 +249,15 @@ class _GameScreenState extends State<GameScreen> {
     String text = "Nieznany błąd";
 
     if (e is DioException) {
-      text = e.response != null
-          ? "Błąd ${e.response?.statusCode}"
-          : (e.message ?? text);
+      final data = e.response?.data;
+
+      if (data is Map && data["error"] != null) {
+        text = data["error"].toString();
+      } else if (data is String) {
+        text = data;
+      } else {
+        text = e.message ?? text;
+      }
     } else {
       text = e.toString();
     }
@@ -257,14 +275,15 @@ class _GameScreenState extends State<GameScreen> {
   Future<void> loadAll() async {
     await loadSettlement();
     await loadAvailableBuildings();
-    await game.refreshBuildings();
+    if (game.isLoaded) {
+      await game.refreshBuildings();
+    }
     calculateRates();
   }
 
   Future<void> loadSettlement() async {
     try {
-      final settlement =
-          await settlementService.getSettlement();
+      final settlement = await settlementService.getSettlement();
 
       if (!mounted) return;
 
@@ -296,11 +315,9 @@ class _GameScreenState extends State<GameScreen> {
         if (!knownEvents.contains(e.id)) {
           knownEvents.add(e.id);
 
-          ScaffoldMessenger.of(context)
-              .showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              backgroundColor:
-                  UiColors.gold,
+              backgroundColor: UiColors.gold,
               content: Text(
                 "Nowe wydarzenie: ${e.type}",
               ),
@@ -317,13 +334,39 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> loadMarket() async {
     try {
-      final data = await marketService.getOffers();
+      final data = await marketService.getResources();
 
       if (!mounted) return;
 
       setState(() {
-        marketOffers = data;
+        marketResources = data;
       });
+    } catch (e) {
+      showError(e);
+    }
+  }
+
+  Future<void> tradeMarket(
+    String resourceType,
+    double quantity,
+    bool isBuy,
+  ) async {
+    try {
+      if (isBuy) {
+        await marketService.buy(
+          resourceType: resourceType,
+          quantity: quantity,
+        );
+      } else {
+        await marketService.sell(
+          resourceType: resourceType,
+          quantity: quantity,
+        );
+      }
+
+      await loadMarket();
+      await loadMarketHistory();
+      await loadAll();
     } catch (e) {
       showError(e);
     }
@@ -331,8 +374,7 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> loadMarketHistory() async {
     try {
-      final data =
-          await marketService.getHistory();
+      final data = await marketService.getHistory();
 
       if (!mounted) return;
 
@@ -344,46 +386,9 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-  Future<void> buyMarket(String id) async {
-    try {
-      await marketService.buyOffer(
-        offerId: id,
-        quantity: 1,
-      );
-
-      await loadMarket();
-      await loadAll();
-    } catch (e) {
-      showError(e);
-    }
-  }
-
-  Future<void> createOffer() async {
-    final data = await showCreateOfferDialog(
-      context: context,
-    );
-
-    if (data == null) return;
-
-    try {
-      await marketService.createOffer(
-        settlementId: widget.settlementId,
-        resourceType: data["resourceType"],
-        quantity: data["quantity"],
-        pricePerUnit: data["pricePerUnit"],
-      );
-
-      await loadMarket();
-      await loadAll();
-    } catch (e) {
-      showError(e);
-    }
-  }
-
   Future<void> loadRanking() async {
     try {
-      final data =
-          await rankingService.getRanking();
+      final data = await rankingService.getRanking();
 
       if (!mounted) return;
 
@@ -397,8 +402,7 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> loadQuests() async {
     try {
-      final data =
-          await questService.getQuests();
+      final data = await questService.getQuests();
 
       if (!mounted) return;
 
@@ -412,12 +416,18 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> loadPolicy() async {
     try {
-      final data = await policyService.getTaxPolicy();
+      final tax = await policyService.getTaxPolicy();
+
+      final food = await policyService.getFoodPolicy();
+
+      final work = await policyService.getWorkPolicy();
 
       if (!mounted) return;
 
       setState(() {
-        policyData = data;
+        taxPolicy = tax;
+        foodPolicy = food;
+        workPolicy = work;
       });
     } catch (e) {
       showError(e);
@@ -438,9 +448,24 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-  Future<void> choosePolicy(String optionId) async {
+  Future<void> choosePolicy(
+    String policyType,
+    String optionId,
+  ) async {
     try {
-      await policyService.chooseTaxPolicy(optionId);
+      switch (policyType) {
+        case "tax":
+          await policyService.chooseTaxPolicy(optionId);
+          break;
+
+        case "food":
+          await policyService.chooseFoodPolicy(optionId);
+          break;
+
+        case "work":
+          await policyService.chooseWorkPolicy(optionId);
+          break;
+      }
 
       await loadAll();
       await loadPolicy();
@@ -463,8 +488,7 @@ class _GameScreenState extends State<GameScreen> {
     if (selectedBuilding == null) return 0;
 
     for (final e in events) {
-      if ((e.scope ?? "")
-              .contains(selectedBuilding!.id) &&
+      if ((e.scope ?? "").contains(selectedBuilding!.id) &&
           e.remainingSeconds > 0) {
         return e.remainingSeconds;
       }
@@ -638,67 +662,79 @@ class _GameScreenState extends State<GameScreen> {
           Positioned.fill(
             child: GameWidget(game: game),
           ),
+
           TopHud(
             wood: resource("Wood"),
             plank: resource("Plank"),
             berries: resource("Berries"),
             stone: resource("Stone"),
             bread: resource("Bread"),
-
             flour: resource("Flour"),
             wheat: resource("Wheat"),
             stoneTools: resource("StoneTools"),
-
             money: settlementData?.money ?? 0,
             morale: settlementData?.morale ?? 0,
-
-            moralePerHour:
-                settlementData?.moraleChangePerHour ?? 0,
-
-            moraleBreakdown:
-                settlementData?.moraleBreakdown ?? [],
-
-            population:
-                settlementData?.population ?? 0,
+            moralePerHour: settlementData?.moraleChangePerHour ?? 0,
+            moraleBreakdown: settlementData?.moraleBreakdown ?? [],
+            population: settlementData?.population ?? 0,
           ),
 
-          EventPanel(events: events),
+          Positioned(
+            left: 18,
+            top: 100,
+            child: EventPanel(events: events),
+          ),
 
           if (showBuildPanel)
             BuildPanel(
               buildings: availableBuildings,
               onSelect: selectBuilding,
             ),
+
           if (showMarket)
             MarketPanel(
-              offers: marketOffers,
+              resources: marketResources,
               history: marketHistory,
               onClose: () {
                 setState(() {
                   showMarket = false;
                 });
               },
-              onBuy: buyMarket,
-              onCreate: createOffer,
+              onTrade: tradeMarket,
             ),
-          if (showPolicy && policyData != null)
+
+          if (showPolicy &&
+              taxPolicy != null &&
+              foodPolicy != null &&
+              workPolicy != null)
             PolicyPanel(
-              policy: policyData!,
-              activeOptionId: settlementData?.activeTaxPolicy,
+              taxPolicy: taxPolicy!,
+              foodPolicy: foodPolicy!,
+              workPolicy: workPolicy!,
+              activeTaxPolicy: settlementData?.activeTaxPolicy,
+              activeFoodPolicy: settlementData?.activeFoodPolicy,
+              activeWorkPolicy: settlementData?.activeWorkPolicy,
               onClose: () {
                 setState(() {
                   showPolicy = false;
                 });
               },
-              onChoose: (id) async {
-                await choosePolicy(id);
+              onChoose: (
+                policyType,
+                optionId,
+              ) async {
+                await choosePolicy(
+                  policyType,
+                  optionId,
+                );
 
                 if (!mounted) return;
 
                 setState(() {});
               },
             ),
-            if (showIndustries)
+
+          if (showIndustries)
             IndustryPanel(
               industries: industries,
               onClose: () {
@@ -707,8 +743,8 @@ class _GameScreenState extends State<GameScreen> {
                 });
               },
             ),
-            if (showQuests &&
-              questData != null)
+
+          if (showQuests && questData != null)
             QuestPanel(
               quests: questData!,
               onClose: () {
@@ -717,7 +753,8 @@ class _GameScreenState extends State<GameScreen> {
                 });
               },
             ),
-            if (showRanking)
+
+          if (showRanking)
             RankingPanel(
               ranking: ranking,
               onClose: () {
@@ -726,7 +763,8 @@ class _GameScreenState extends State<GameScreen> {
                 });
               },
             ),
-            if (showEconomy && settlementData != null)
+
+          if (showEconomy && settlementData != null)
             EconomyPanel(
               settlement: settlementData!,
               woodPerSec: woodPerSec,
@@ -741,19 +779,21 @@ class _GameScreenState extends State<GameScreen> {
                 });
               },
             ),
+
           if (selectedBuilding != null)
             BuildingSidePanel(
               building: selectedBuilding!,
               timer: getTimer(),
               onUpgrade: upgradeBuilding,
               onDelete: deleteBuilding,
+              onSetWorkers: setWorkers,
               onClose: () {
                 setState(() {
                   selectedBuilding = null;
                 });
               },
-              onSetWorkers: setWorkers,
             ),
+
           Positioned(
             right: 18,
             bottom: 18,
@@ -769,24 +809,27 @@ class _GameScreenState extends State<GameScreen> {
                       onTap: cancelBuildMode,
                     ),
                   ),
+
                 if (selectedType != null) const SizedBox(height: 10),
+
                 SizedBox(
                   width: 180,
                   child: UiButton(
-                    text: showBuildPanel ? "Zamknij Menu" : "Budowa",
+                    text: showBuildPanel ? "Zamknij" : "Budowa",
                     icon: Icons.home_work,
                     color: UiColors.green,
                     onTap: () {
                       setState(() {
+                        closeAllPanels();
+
                         showBuildPanel = !showBuildPanel;
-                        showMarket = false;
-                        showPolicy = false;
-                        selectedBuilding = null;
                       });
                     },
                   ),
                 ),
+
                 const SizedBox(height: 10),
+
                 SizedBox(
                   width: 180,
                   child: UiButton(
@@ -800,15 +843,16 @@ class _GameScreenState extends State<GameScreen> {
                       if (!mounted) return;
 
                       setState(() {
+                        closeAllPanels();
+
                         showMarket = true;
-                        showBuildPanel = false;
-                        showPolicy = false;
-                        selectedBuilding = null;
                       });
                     },
                   ),
                 ),
+
                 const SizedBox(height: 10),
+
                 SizedBox(
                   width: 180,
                   child: UiButton(
@@ -821,14 +865,14 @@ class _GameScreenState extends State<GameScreen> {
                       if (!mounted) return;
 
                       setState(() {
+                        closeAllPanels();
+
                         showPolicy = true;
-                        showMarket = false;
-                        showBuildPanel = false;
-                        selectedBuilding = null;
                       });
                     },
                   ),
                 ),
+
                 const SizedBox(height: 10),
 
                 SizedBox(
@@ -843,13 +887,9 @@ class _GameScreenState extends State<GameScreen> {
                       if (!mounted) return;
 
                       setState(() {
+                        closeAllPanels();
+
                         showIndustries = true;
-
-                        showPolicy = false;
-                        showMarket = false;
-                        showBuildPanel = false;
-
-                        selectedBuilding = null;
                       });
                     },
                   ),
@@ -869,14 +909,9 @@ class _GameScreenState extends State<GameScreen> {
                       if (!mounted) return;
 
                       setState(() {
+                        closeAllPanels();
+
                         showQuests = true;
-
-                        showIndustries = false;
-                        showPolicy = false;
-                        showMarket = false;
-                        showBuildPanel = false;
-
-                        selectedBuilding = null;
                       });
                     },
                   ),
@@ -896,15 +931,9 @@ class _GameScreenState extends State<GameScreen> {
                       if (!mounted) return;
 
                       setState(() {
+                        closeAllPanels();
+
                         showRanking = true;
-
-                        showQuests = false;
-                        showIndustries = false;
-                        showPolicy = false;
-                        showMarket = false;
-                        showBuildPanel = false;
-
-                        selectedBuilding = null;
                       });
                     },
                   ),
@@ -920,15 +949,9 @@ class _GameScreenState extends State<GameScreen> {
                     color: UiColors.blue,
                     onTap: () {
                       setState(() {
+                        closeAllPanels();
+
                         showEconomy = true;
-
-                        showQuests = false;
-                        showIndustries = false;
-                        showPolicy = false;
-                        showMarket = false;
-                        showBuildPanel = false;
-
-                        selectedBuilding = null;
                       });
                     },
                   ),
@@ -936,6 +959,7 @@ class _GameScreenState extends State<GameScreen> {
               ],
             ),
           ),
+
           if (loading)
             Positioned.fill(
               child: Container(

@@ -6,6 +6,11 @@ const Map<String, BuildingDefinition> buildingDefinitions = {
     name: "Cottage",
     assetPath: "assets/buildings/tier0/cottage.png",
   ),
+  "House": BuildingDefinition(
+    type: "House",
+    name: "House",
+    assetPath: "assets/buildings/tier1/house.png",
+  ),
   "GatherersCamp": BuildingDefinition(
     type: "GatherersCamp",
     name: "Gatherers Camp",

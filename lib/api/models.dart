@@ -398,7 +398,9 @@ class SessionJoinResponse {
 
 class Settlement {
   final String id;
+
   final String? name;
+
   final List<Resource> resources;
 
   final int storageCapacity;
@@ -406,15 +408,22 @@ class Settlement {
   final double storageFree;
 
   final int population;
+
   final double morale;
 
   final double money;
 
   final double moraleChangePerHour;
+
   final List<String> moraleBreakdown;
+
   final List<Industry> industries;
 
   final String? activeTaxPolicy;
+
+  final String? activeFoodPolicy;
+
+  final String? activeWorkPolicy;
 
   Settlement({
     required this.id,
@@ -430,33 +439,86 @@ class Settlement {
     required this.moraleBreakdown,
     required this.industries,
     required this.activeTaxPolicy,
+    required this.activeFoodPolicy,
+    required this.activeWorkPolicy,
   });
 
-  factory Settlement.fromJson(Map<String, dynamic> json) {
+  factory Settlement.fromJson(
+    Map<String, dynamic> json,
+  ) {
     return Settlement(
       id: json['id']?.toString() ?? '',
+
       name: json['name']?.toString(),
-      resources: (json['resources'] as List<dynamic>? ?? [])
-          .map((e) => Resource.fromJson(e))
-          .toList(),
-      storageCapacity: json['storageCapacity'] ?? 0,
+
+      resources:
+          (json['resources']
+                      as List<dynamic>? ??
+                  [])
+              .map(
+                (e) => Resource.fromJson(e),
+              )
+              .toList(),
+
+      storageCapacity:
+          json['storageCapacity'] ?? 0,
+
       storageUsed:
-          (json['storageUsed'] as num?)?.toDouble() ?? 0.0,
+          (json['storageUsed'] as num?)
+                  ?.toDouble() ??
+              0.0,
+
       storageFree:
-          (json['storageFree'] as num?)?.toDouble() ?? 0.0,
-      population: json['population'] ?? 0,
-      morale: (json['morale'] as num?)?.toDouble() ?? 0.0,
-      money: (json['money'] as num?)?.toDouble() ?? 0.0,
+          (json['storageFree'] as num?)
+                  ?.toDouble() ??
+              0.0,
+
+      population:
+          json['population'] ?? 0,
+
+      morale:
+          (json['morale'] as num?)
+                  ?.toDouble() ??
+              0.0,
+
+      money:
+          (json['money'] as num?)
+                  ?.toDouble() ??
+              0.0,
+
       moraleChangePerHour:
-          (json['moraleChangePerHour'] as num?)?.toDouble() ?? 0.0,
+          (json['moraleChangePerHour']
+                      as num?)
+                  ?.toDouble() ??
+              0.0,
+
       moraleBreakdown:
-          (json['moraleBreakdown'] as List<dynamic>? ?? [])
+          (json['moraleBreakdown']
+                      as List<dynamic>? ??
+                  [])
               .map((e) => e.toString())
               .toList(),
-      industries: (json['industries'] as List<dynamic>? ?? [])
-          .map((e) => Industry.fromJson(e))
-          .toList(),
-      activeTaxPolicy: json['activeTaxPolicy']?.toString(),
+
+      industries:
+          (json['industries']
+                      as List<dynamic>? ??
+                  [])
+              .map(
+                (e) => Industry.fromJson(e),
+              )
+              .toList(),
+
+      activeTaxPolicy:
+          json['activeTaxPolicy']
+              ?.toString(),
+
+      activeFoodPolicy:
+          json['activeFoodPolicy']
+              ?.toString(),
+
+      activeWorkPolicy:
+          json['activeWorkPolicy']
+              ?.toString(),
     );
   }
 }
@@ -547,52 +609,102 @@ class GameMap {
   }
 }
 
-class MarketOffer {
-  final String id;
+class MarketResource {
   final String resourceType;
-  final double remainingQuantity;
-  final double minPricePerUnit;
-  final double marketPrice;
-  final double finalPrice;
-  final String sellerSettlementId;
 
-  MarketOffer({
-    required this.id,
+  final double quantity;
+
+  final double currentPrice;
+
+  final double buyPrice;
+
+  final double sellPrice;
+
+  MarketResource({
     required this.resourceType,
-    required this.remainingQuantity,
-    required this.minPricePerUnit,
-    required this.marketPrice,
-    required this.finalPrice,
-    required this.sellerSettlementId,
+    required this.quantity,
+    required this.currentPrice,
+    required this.buyPrice,
+    required this.sellPrice,
   });
 
-  factory MarketOffer.fromJson(Map<String, dynamic> json) {
-    return MarketOffer(
-      id: json['id']?.toString() ?? '',
-      resourceType: json['resourceType']?.toString() ?? '',
-      remainingQuantity:
-          (json['remainingQuantity'] as num?)?.toDouble() ?? 0.0,
-      minPricePerUnit:
-          (json['minPricePerUnit'] as num?)?.toDouble() ?? 0.0,
-      marketPrice:
-          (json['marketPrice'] as num?)?.toDouble() ?? 0.0,
-      finalPrice:
-          (json['finalPrice'] as num?)?.toDouble() ?? 0.0,
-      sellerSettlementId:
-          json['sellerSettlementId']?.toString() ?? '',
+  factory MarketResource.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return MarketResource(
+      resourceType:
+          json["resourceType"]
+                  ?.toString() ??
+              "",
+
+      quantity:
+          (json["quantity"] as num?)
+                  ?.toDouble() ??
+              0,
+
+      currentPrice:
+          (json["currentPrice"] as num?)
+                  ?.toDouble() ??
+              0,
+
+      buyPrice:
+          (json["buyPrice"] as num?)
+                  ?.toDouble() ??
+              0,
+
+      sellPrice:
+          (json["sellPrice"] as num?)
+                  ?.toDouble() ??
+              0,
     );
   }
+}
 
-    Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "resourceType": resourceType,
-      "remainingQuantity": remainingQuantity,
-      "minPricePerUnit": minPricePerUnit,
-      "marketPrice": marketPrice,
-      "finalPrice": finalPrice,
-      "sellerSettlementId": sellerSettlementId,
-    };
+class MarketTransport {
+  final String id;
+
+  final String resourceType;
+
+  final double quantity;
+
+  final DateTime? arrivalTime;
+
+  final int remainingSeconds;
+
+  MarketTransport({
+    required this.id,
+    required this.resourceType,
+    required this.quantity,
+    required this.arrivalTime,
+    required this.remainingSeconds,
+  });
+
+  factory MarketTransport.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return MarketTransport(
+      id: json["id"]?.toString() ?? "",
+
+      resourceType:
+          json["resourceType"]
+                  ?.toString() ??
+              "",
+
+      quantity:
+          (json["quantity"] as num?)
+                  ?.toDouble() ??
+              0,
+
+      arrivalTime:
+          json["arrivalTime"] != null
+              ? DateTime.tryParse(
+                  json["arrivalTime"],
+                )
+              : null,
+
+      remainingSeconds:
+          json["remainingSeconds"] ?? 0,
+    );
   }
 }
 

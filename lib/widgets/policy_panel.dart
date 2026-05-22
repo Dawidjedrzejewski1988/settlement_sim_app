@@ -4,16 +4,29 @@ import '../api/models.dart';
 import '../ui/ui_system.dart';
 
 class PolicyPanel extends StatelessWidget {
-  final Policy policy;
-  final String? activeOptionId;
+  final Policy taxPolicy;
+  final Policy foodPolicy;
+  final Policy workPolicy;
+
+  final String? activeTaxPolicy;
+  final String? activeFoodPolicy;
+  final String? activeWorkPolicy;
 
   final VoidCallback onClose;
-  final Function(String optionId) onChoose;
+
+  final Function(
+    String type,
+    String optionId,
+  ) onChoose;
 
   const PolicyPanel({
     super.key,
-    required this.policy,
-    required this.activeOptionId,
+    required this.taxPolicy,
+    required this.foodPolicy,
+    required this.workPolicy,
+    required this.activeTaxPolicy,
+    required this.activeFoodPolicy,
+    required this.activeWorkPolicy,
     required this.onClose,
     required this.onChoose,
   });
@@ -22,253 +35,386 @@ class PolicyPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        width: 760,
+        width: 980,
+        height: 700,
+
         padding: const EdgeInsets.all(24),
+
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(26),
+          borderRadius:
+              BorderRadius.circular(28),
+
           border: Border.all(
             color: UiColors.gold,
             width: 2,
           ),
+
           gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF6A3813),
-              Color(0xFF3B1C08),
-              Color(0xFF1F0D04),
+              Color(0xFF6B3610),
+              Color(0xFF3A1906),
+              Color(0xFF190902),
             ],
           ),
+
           boxShadow: const [
             BoxShadow(
               color: Colors.black54,
-              blurRadius: 18,
-              offset: Offset(0, 8),
+              blurRadius: 20,
+              offset: Offset(0, 10),
             ),
           ],
         ),
+
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
           children: [
+
+            /// HEADER
             Row(
               children: [
+
                 Expanded(
                   child: Text(
                     "Polityka Osady",
-                    style: UiText.title(
-                      size: 32,
-                    ),
+                    style:
+                        UiText.title(size: 34),
                   ),
                 ),
 
-                IconButton(
-                  onPressed: onClose,
-                  icon: const Icon(
-                    Icons.close,
-                    color: Colors.white,
+                InkWell(
+                  onTap: onClose,
+
+                  borderRadius:
+                      BorderRadius.circular(
+                    12,
+                  ),
+
+                  child: Container(
+                    width: 42,
+                    height: 42,
+
+                    alignment: Alignment.center,
+
+                    decoration: BoxDecoration(
+                      color: Colors.black26,
+
+                      borderRadius:
+                          BorderRadius.circular(
+                        12,
+                      ),
+                    ),
+
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 26),
+            const SizedBox(height: 20),
 
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(
-                  alpha: 0.16,
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+
+                    buildPolicySection(
+                      icon:
+                          Icons.account_balance,
+
+                      title:
+                          "Polityka podatkowa",
+
+                      description:
+                          "Określa poziom podatków mieszkańców.",
+
+                      type: "tax",
+
+                      policy: taxPolicy,
+
+                      activeOptionId:
+                          activeTaxPolicy,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    buildPolicySection(
+                      icon: Icons.restaurant,
+
+                      title:
+                          "Polityka żywnościowa",
+
+                      description:
+                          "Kontroluje zużycie żywności oraz jakość racji.",
+
+                      type: "food",
+
+                      policy: foodPolicy,
+
+                      activeOptionId:
+                          activeFoodPolicy,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    buildPolicySection(
+                      icon: Icons.work,
+
+                      title:
+                          "Polityka pracy",
+
+                      description:
+                          "Wpływa na produkcję oraz wzrost populacji.",
+
+                      type: "work",
+
+                      policy: workPolicy,
+
+                      activeOptionId:
+                          activeWorkPolicy,
+                    ),
+                  ],
                 ),
-                borderRadius:
-                    BorderRadius.circular(22),
-                border: Border.all(
-                  color: Colors.white10,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.account_balance,
-                        color: UiColors.gold,
-                      ),
-
-                      const SizedBox(width: 10),
-
-                      Text(
-                        "Polityka podatkowa",
-                        style: UiText.title(
-                          size: 24,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Text(
-                    "Określa poziom opodatkowania mieszkańców.",
-                    style: UiText.body(),
-                  ),
-
-                  const SizedBox(height: 26),
-
-                  Row(
-                    children: policy.options.map(
-                      (option) {
-                        final selected =
-                            activeOptionId ==
-                                option.id;
-
-                        return Expanded(
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(
-                              horizontal: 4,
-                            ),
-                            child: SizedBox(
-                              height: 72,
-                              child: InkWell(
-                                borderRadius:
-                                    BorderRadius.circular(
-                                  18,
-                                ),
-                                onTap: () =>
-                                    onChoose(
-                                  option.id,
-                                ),
-                                child: AnimatedContainer(
-                                  duration:
-                                      const Duration(
-                                    milliseconds:
-                                        180,
-                                  ),
-                                  decoration:
-                                      BoxDecoration(
-                                    color: selected
-                                        ? UiColors
-                                            .gold
-                                        : Colors
-                                            .black
-                                            .withValues(
-                                            alpha:
-                                                0.22,
-                                          ),
-                                    borderRadius:
-                                        BorderRadius.circular(
-                                      18,
-                                    ),
-                                    border:
-                                        Border.all(
-                                      color: selected
-                                          ? UiColors
-                                              .gold
-                                          : Colors
-                                              .white10,
-                                      width:
-                                          selected
-                                              ? 2
-                                              : 1,
-                                    ),
-                                    boxShadow:
-                                        selected
-                                            ? [
-                                                BoxShadow(
-                                                  color: UiColors.gold.withValues(
-                                                    alpha:
-                                                        0.35,
-                                                  ),
-                                                  blurRadius:
-                                                      12,
-                                                ),
-                                              ]
-                                            : [],
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment
-                                            .center,
-                                    children: [
-                                      Text(
-                                        option.label
-                                            .replaceAll(
-                                          " podatki",
-                                          "",
-                                        ),
-                                        textAlign:
-                                            TextAlign
-                                                .center,
-                                        style:
-                                            UiText.title(
-                                          size: 18,
-                                        ).copyWith(
-                                          color: selected
-                                              ? Colors
-                                                  .white
-                                              : Colors
-                                                  .white70,
-                                        ),
-                                      ),
-
-                                      if (selected)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(
-                                            top: 6,
-                                          ),
-                                          child:
-                                              Container(
-                                            padding:
-                                                const EdgeInsets.symmetric(
-                                              horizontal:
-                                                  10,
-                                              vertical:
-                                                  4,
-                                            ),
-                                            decoration:
-                                                BoxDecoration(
-                                              color: Colors
-                                                  .green,
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                20,
-                                              ),
-                                            ),
-                                            child:
-                                                const Text(
-                                              "AKTYWNA",
-                                              style:
-                                                  TextStyle(
-                                                color: Colors
-                                                    .white,
-                                                fontWeight:
-                                                    FontWeight.bold,
-                                                fontSize:
-                                                    11,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ).toList(),
-                  ),
-                ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget buildPolicySection({
+    required IconData icon,
+    required String title,
+    required String description,
+    required String type,
+    required Policy policy,
+    required String? activeOptionId,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(
+          alpha: 0.14,
+        ),
+
+        borderRadius:
+            BorderRadius.circular(22),
+
+        border: Border.all(
+          color: Colors.white10,
+        ),
+      ),
+
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+        children: [
+
+          /// TOP
+          Row(
+            children: [
+
+              Container(
+                width: 42,
+                height: 42,
+
+                decoration: BoxDecoration(
+                  color: UiColors.gold
+                      .withValues(
+                    alpha: 0.12,
+                  ),
+
+                  borderRadius:
+                      BorderRadius.circular(
+                    12,
+                  ),
+                ),
+
+                child: Icon(
+                  icon,
+                  color: UiColors.gold,
+                  size: 22,
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment
+                          .start,
+
+                  children: [
+
+                    Text(
+                      title,
+                      style:
+                          UiText.title(
+                        size: 24,
+                      ),
+                    ),
+
+                    const SizedBox(height: 2),
+
+                    Text(
+                      description,
+                      style:
+                          UiText.body(
+                        size: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          /// BUTTONS
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+
+            children:
+                policy.options.map((option) {
+
+              final selected =
+                  activeOptionId ==
+                      option.id;
+
+              return InkWell(
+                borderRadius:
+                    BorderRadius.circular(
+                  16,
+                ),
+
+                onTap: () {
+                  onChoose(
+                    type,
+                    option.id,
+                  );
+                },
+
+                child: AnimatedContainer(
+                  duration:
+                      const Duration(
+                    milliseconds: 180,
+                  ),
+
+                  height: 52,
+
+                  padding:
+                      const EdgeInsets.symmetric(
+                    horizontal: 18,
+                  ),
+
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? UiColors.gold
+                        : Colors.black
+                            .withValues(
+                            alpha: 0.22,
+                          ),
+
+                    borderRadius:
+                        BorderRadius.circular(
+                      16,
+                    ),
+
+                    border: Border.all(
+                      color: selected
+                          ? UiColors.gold
+                          : Colors.white10,
+                    ),
+
+                    boxShadow: selected
+                        ? [
+                            BoxShadow(
+                              color: UiColors
+                                  .gold
+                                  .withValues(
+                                alpha: 0.25,
+                              ),
+
+                              blurRadius: 10,
+                            ),
+                          ]
+                        : [],
+                  ),
+
+                  child: Row(
+                    mainAxisSize:
+                        MainAxisSize.min,
+
+                    children: [
+
+                      Text(
+                        option.label,
+
+                        style:
+                            UiText.title(
+                          size: 15,
+                        ).copyWith(
+                          color: selected
+                              ? Colors.white
+                              : Colors.white70,
+                        ),
+                      ),
+
+                      if (selected) ...[
+
+                        const SizedBox(
+                            width: 10),
+
+                        Container(
+                          padding:
+                              const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+
+                          decoration:
+                              BoxDecoration(
+                            color:
+                                Colors.green,
+
+                            borderRadius:
+                                BorderRadius.circular(
+                              20,
+                            ),
+                          ),
+
+                          child: const Text(
+                            "AKTYWNA",
+
+                            style: TextStyle(
+                              color:
+                                  Colors.white,
+
+                              fontWeight:
+                                  FontWeight.bold,
+
+                              fontSize: 9,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }

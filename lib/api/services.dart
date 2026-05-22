@@ -166,49 +166,48 @@ class MapService {
 class MarketService {
   final dio = ApiClient().dio;
 
-  Future<List<MarketOffer>> getOffers() async {
+  Future<List<MarketResource>> getResources() async {
     try {
-      final res = await dio.get("/api/market/offers");
+      final res = await dio.get(
+        "/api/market/resources",
+      );
 
       return (res.data as List)
-          .map((e) => MarketOffer.fromJson(e))
+          .map(
+            (e) => MarketResource.fromJson(e),
+          )
           .toList();
     } catch (e) {
-      throw Exception("getOffers failed: $e");
+      throw Exception(
+        "getResources failed: $e",
+      );
     }
   }
 
-  Future<void> createOffer({
-    required String settlementId,
+  Future<void> buy({
     required String resourceType,
     required double quantity,
-    required double pricePerUnit,
   }) async {
     await dio.post(
-      "/api/market/offers",
+      "/api/market/buy",
       data: {
-        "settlementId": settlementId,
         "resourceType": resourceType,
         "quantity": quantity,
-        "pricePerUnit": pricePerUnit,
       },
     );
   }
 
-  Future<void> buyOffer({
-    required String offerId,
-    required int quantity,
+  Future<void> sell({
+    required String resourceType,
+    required double quantity,
   }) async {
     await dio.post(
-      "/api/market/offers/$offerId/buy",
+      "/api/market/sell",
       data: {
+        "resourceType": resourceType,
         "quantity": quantity,
       },
     );
-  }
-
-  Future<void> deleteOffer(String id) async {
-    await dio.delete("/api/market/offers/$id");
   }
 
   Future<List<MarketHistoryEntry>>
@@ -232,21 +231,87 @@ class MarketService {
       );
     }
   }
-  
+
+  Future<List<MarketTransport>>
+      getTransports() async {
+    try {
+      final res = await dio.get(
+        "/api/market/transports",
+      );
+
+      return (res.data as List)
+          .map(
+            (e) =>
+                MarketTransport.fromJson(
+              e,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      throw Exception(
+        "getTransports failed: $e",
+      );
+    }
+  }
 }
 
 class PolicyService {
   final dio = ApiClient().dio;
 
   Future<Policy> getTaxPolicy() async {
-    final res = await dio.get("/api/policy/tax");
+    final res = await dio.get(
+      "/api/policy/tax",
+    );
+
     return Policy.fromJson(res.data);
   }
 
-  Future<void> chooseTaxPolicy(String optionId) async {
+  Future<void> chooseTaxPolicy(
+    String optionId,
+  ) async {
     await dio.post(
       "/api/policy/tax",
-      data: {"optionId": optionId},
+      data: {
+        "optionId": optionId,
+      },
+    );
+  }
+
+  Future<Policy> getFoodPolicy() async {
+    final res = await dio.get(
+      "/api/policy/food",
+    );
+
+    return Policy.fromJson(res.data);
+  }
+
+  Future<void> chooseFoodPolicy(
+    String optionId,
+  ) async {
+    await dio.post(
+      "/api/policy/food",
+      data: {
+        "optionId": optionId,
+      },
+    );
+  }
+
+  Future<Policy> getWorkPolicy() async {
+    final res = await dio.get(
+      "/api/policy/work",
+    );
+
+    return Policy.fromJson(res.data);
+  }
+
+  Future<void> chooseWorkPolicy(
+    String optionId,
+  ) async {
+    await dio.post(
+      "/api/policy/work",
+      data: {
+        "optionId": optionId,
+      },
     );
   }
 }

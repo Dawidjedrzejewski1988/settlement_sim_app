@@ -101,10 +101,7 @@ class EventPanel extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Positioned(
-      left: 18,
-      top: 100,
-      child: Container(
+    return Container(
         width: 320,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -232,7 +229,6 @@ class EventPanel extends StatelessWidget {
             }),
           ],
         ),
-      ),
     );
   }
 }
