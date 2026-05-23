@@ -561,33 +561,98 @@ class Event {
   }
 }
 
+class IndustryReward {
+  final int level;
+  final String title;
+  final String description;
+  final bool unlocked;
+
+  IndustryReward({
+    required this.level,
+    required this.title,
+    required this.description,
+    required this.unlocked,
+  });
+
+  factory IndustryReward.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return IndustryReward(
+      level: json["level"] ?? 0,
+
+      title:
+          json["title"]?.toString() ?? "",
+
+      description:
+          json["description"]?.toString() ?? "",
+
+      unlocked:
+          json["unlocked"] ?? false,
+    );
+  }
+}
+
 class Industry {
   final String type;
   final String? name;
+  final String? description;
   final int level;
   final double xp;
   final double nextLevelXP;
   final double progressPercent;
+  final List<IndustryReward> rewards;
 
   Industry({
     required this.type,
     this.name,
+    this.description,
     required this.level,
     required this.xp,
     required this.nextLevelXP,
     required this.progressPercent,
+    required this.rewards,
   });
 
-  factory Industry.fromJson(Map<String, dynamic> json) {
+  factory Industry.fromJson(
+    Map<String, dynamic> json,
+  ) {
     return Industry(
       type: json['type']?.toString() ?? '',
+
       name: json['name']?.toString(),
+
+      description:
+          json['description']?.toString(),
+
       level: json['level'] ?? 0,
-      xp: (json['xp'] as num?)?.toDouble() ?? 0.0,
+
+      xp:
+          (json['xp'] as num?)
+                  ?.toDouble() ??
+              0.0,
+
       nextLevelXP:
-          (json['nextLevelXP'] as num?)?.toDouble() ?? 0.0,
+          (json['nextLevelXP'] as num?)
+                  ?.toDouble() ??
+              0.0,
+
       progressPercent:
-          (json['progressPercent'] as num?)?.toDouble() ?? 0.0,
+          (json['progressPercent']
+                      as num?)
+                  ?.toDouble() ??
+              0.0,
+
+      rewards:
+          (json['rewards']
+                      as List<dynamic>? ??
+                  [])
+              .map(
+                (e) =>
+                    IndustryReward.fromJson(
+                  e,
+                ),
+              )
+              .toList(),
     );
   }
 }
