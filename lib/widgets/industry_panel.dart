@@ -269,7 +269,6 @@ class _IndustryPanelState extends State<IndustryPanel> {
 
                   const SizedBox(width: 18),
 
-                  /// RIGHT
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.all(24),
@@ -296,7 +295,6 @@ class _IndustryPanelState extends State<IndustryPanel> {
                         crossAxisAlignment: CrossAxisAlignment.start,
 
                         children: [
-                          /// HEADER
                           Row(
                             children: [
                               Container(
@@ -392,7 +390,6 @@ class _IndustryPanelState extends State<IndustryPanel> {
 
                           const SizedBox(height: 28),
 
-                          /// BONUSES
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

@@ -10,6 +10,7 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  final usernameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -31,17 +32,9 @@ class _AuthScreenState extends State<AuthScreen> {
           emailController.text.trim(),
           passwordController.text.trim(),
         );
-
-        if (!mounted) return;
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const SessionsScreen(),
-          ),
-        );
       } else {
         await service.register(
+          usernameController.text.trim(),
           emailController.text.trim(),
           passwordController.text.trim(),
         );
@@ -50,16 +43,16 @@ class _AuthScreenState extends State<AuthScreen> {
           emailController.text.trim(),
           passwordController.text.trim(),
         );
-
-        if (!mounted) return;
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const SessionsScreen(),
-          ),
-        );
       }
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const SessionsScreen(),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
 
@@ -75,6 +68,22 @@ class _AuthScreenState extends State<AuthScreen> {
     });
   }
 
+  Widget field({
+    required TextEditingController controller,
+    required String text,
+    bool password = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15),
+      child: TextField(
+        controller: controller,
+        obscureText: password,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(labelText: text),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,14 +91,14 @@ class _AuthScreenState extends State<AuthScreen> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/ui/menu_bg.png',
+              "assets/ui/menu_bg.png",
               fit: BoxFit.cover,
             ),
           ),
 
           Positioned.fill(
             child: Container(
-              color: Colors.black.withValues(alpha: 0.55)
+              color: Colors.black.withValues(alpha: 0.55),
             ),
           ),
 
@@ -106,7 +115,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Image.asset(
-                    'assets/logo/logo.png',
+                    "assets/logo/logo.png",
                     width: 180,
                   ),
 
@@ -123,39 +132,36 @@ class _AuthScreenState extends State<AuthScreen> {
 
                   const SizedBox(height: 25),
 
-                  TextField(
+                  if (!isLogin)
+                    field(
+                      controller: usernameController,
+                      text: "Nazwa gracza",
+                    ),
+
+                  field(
                     controller: emailController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
-                      labelText: "Email",
-                    ),
+                    text: "Email",
                   ),
 
-                  const SizedBox(height: 15),
-
-                  TextField(
+                  field(
                     controller: passwordController,
-                    obscureText: true,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
-                      labelText: "Hasło",
-                    ),
+                    text: "Hasło",
+                    password: true,
                   ),
-
-                  const SizedBox(height: 20),
 
                   if (message.isNotEmpty)
-                    Text(
-                      message,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: message.contains("utworz")
-                            ? Colors.green
-                            : Colors.red,
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 15),
+                      child: Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: message.contains("utworz")
+                              ? Colors.green
+                              : Colors.red,
+                        ),
                       ),
                     ),
-
-                  const SizedBox(height: 15),
 
                   SizedBox(
                     width: double.infinity,

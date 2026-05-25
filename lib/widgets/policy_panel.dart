@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../api/models.dart';
 import '../ui/ui_system.dart';
 
-class PolicyPanel extends StatelessWidget {
+class PolicyPanel extends StatefulWidget {
   final Policy taxPolicy;
   final Policy foodPolicy;
   final Policy workPolicy;
@@ -32,17 +32,97 @@ class PolicyPanel extends StatelessWidget {
   });
 
   @override
+  State<PolicyPanel> createState() =>
+      _PolicyPanelState();
+}
+
+class _PolicyPanelState
+    extends State<PolicyPanel> {
+
+  String selectedType = "tax";
+
+  Policy get currentPolicy {
+    switch (selectedType) {
+
+      case "food":
+        return widget.foodPolicy;
+
+      case "work":
+        return widget.workPolicy;
+
+      default:
+        return widget.taxPolicy;
+    }
+  }
+
+  String? get currentActive {
+    switch (selectedType) {
+
+      case "food":
+        return widget.activeFoodPolicy;
+
+      case "work":
+        return widget.activeWorkPolicy;
+
+      default:
+        return widget.activeTaxPolicy;
+    }
+  }
+
+  IconData get currentIcon {
+    switch (selectedType) {
+
+      case "food":
+        return Icons.restaurant;
+
+      case "work":
+        return Icons.work;
+
+      default:
+        return Icons.account_balance;
+    }
+  }
+
+  String get currentTitle {
+    switch (selectedType) {
+
+      case "food":
+        return "Polityka żywnościowa";
+
+      case "work":
+        return "Polityka pracy";
+
+      default:
+        return "Polityka podatkowa";
+    }
+  }
+
+  String get currentDescription {
+    switch (selectedType) {
+
+      case "food":
+        return "Kontroluje zużycie żywności oraz morale mieszkańców.";
+
+      case "work":
+        return "Wpływa na wydajność pracy i rozwój populacji.";
+
+      default:
+        return "Wpływa na dochody osady oraz zadowolenie mieszkańców.";
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        width: 980,
-        height: 700,
+        width: 1180,
+        height: 760,
 
         padding: const EdgeInsets.all(24),
 
         decoration: BoxDecoration(
           borderRadius:
-              BorderRadius.circular(28),
+              BorderRadius.circular(30),
 
           border: Border.all(
             color: UiColors.gold,
@@ -52,10 +132,11 @@ class PolicyPanel extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
+
             colors: [
               Color(0xFF6B3610),
-              Color(0xFF3A1906),
-              Color(0xFF190902),
+              Color(0xFF341505),
+              Color(0xFF140601),
             ],
           ),
 
@@ -76,33 +157,45 @@ class PolicyPanel extends StatelessWidget {
               children: [
 
                 Expanded(
-                  child: Text(
-                    "Polityka Osady",
-                    style:
-                        UiText.title(size: 34),
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+
+                    children: [
+
+                      Text(
+                        "POLITYKA OSADY",
+                        style:
+                            UiText.title(size: 36),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      Text(
+                        "Zarządzaj podatkami, żywnością i warunkami pracy mieszkańców.",
+                        style:
+                            UiText.body(size: 14),
+                      ),
+                    ],
                   ),
                 ),
 
                 InkWell(
-                  onTap: onClose,
+                  onTap: widget.onClose,
 
                   borderRadius:
-                      BorderRadius.circular(
-                    12,
-                  ),
+                      BorderRadius.circular(14),
 
                   child: Container(
-                    width: 42,
-                    height: 42,
-
-                    alignment: Alignment.center,
+                    width: 48,
+                    height: 48,
 
                     decoration: BoxDecoration(
                       color: Colors.black26,
 
                       borderRadius:
                           BorderRadius.circular(
-                        12,
+                        14,
                       ),
                     ),
 
@@ -115,70 +208,431 @@ class PolicyPanel extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
+              child: Row(
+                children: [
 
-                    buildPolicySection(
-                      icon:
-                          Icons.account_balance,
+                  /// LEFT
+                  Container(
+                    width: 280,
 
-                      title:
-                          "Polityka podatkowa",
+                    padding:
+                        const EdgeInsets.all(18),
 
-                      description:
-                          "Określa poziom podatków mieszkańców.",
+                    decoration: BoxDecoration(
+                      color: Colors.black
+                          .withValues(alpha: 0.18),
 
-                      type: "tax",
+                      borderRadius:
+                          BorderRadius.circular(
+                        24,
+                      ),
 
-                      policy: taxPolicy,
-
-                      activeOptionId:
-                          activeTaxPolicy,
+                      border: Border.all(
+                        color: UiColors.gold
+                            .withValues(
+                          alpha: 0.12,
+                        ),
+                      ),
                     ),
 
-                    const SizedBox(height: 16),
+                    child: Column(
+                      children: [
 
-                    buildPolicySection(
-                      icon: Icons.restaurant,
+                        categoryButton(
+                          type: "tax",
+                          icon:
+                              Icons.account_balance,
+                          title:
+                              "Polityka podatkowa",
+                        ),
 
-                      title:
-                          "Polityka żywnościowa",
+                        const SizedBox(height: 14),
 
-                      description:
-                          "Kontroluje zużycie żywności oraz jakość racji.",
+                        categoryButton(
+                          type: "food",
+                          icon: Icons.restaurant,
+                          title:
+                              "Polityka żywnościowa",
+                        ),
 
-                      type: "food",
+                        const SizedBox(height: 14),
 
-                      policy: foodPolicy,
-
-                      activeOptionId:
-                          activeFoodPolicy,
+                        categoryButton(
+                          type: "work",
+                          icon: Icons.work,
+                          title:
+                              "Polityka pracy",
+                        ),
+                      ],
                     ),
+                  ),
 
-                    const SizedBox(height: 16),
+                  const SizedBox(width: 22),
 
-                    buildPolicySection(
-                      icon: Icons.work,
+                  /// RIGHT
+                  Expanded(
+                    child: Container(
+                      padding:
+                          const EdgeInsets.all(26),
 
-                      title:
-                          "Polityka pracy",
+                      decoration: BoxDecoration(
+                        color: Colors.black
+                            .withValues(alpha: 0.18),
 
-                      description:
-                          "Wpływa na produkcję oraz wzrost populacji.",
+                        borderRadius:
+                            BorderRadius.circular(
+                          28,
+                        ),
 
-                      type: "work",
+                        border: Border.all(
+                          color: UiColors.gold
+                              .withValues(
+                            alpha: 0.12,
+                          ),
+                        ),
+                      ),
 
-                      policy: workPolicy,
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
 
-                      activeOptionId:
-                          activeWorkPolicy,
+                        children: [
+
+                          /// TOP
+                          Row(
+                            children: [
+
+                              Container(
+                                width: 78,
+                                height: 78,
+
+                                decoration:
+                                    BoxDecoration(
+                                  shape:
+                                      BoxShape.circle,
+
+                                  border: Border.all(
+                                    color: UiColors
+                                        .gold
+                                        .withValues(
+                                      alpha: 0.35,
+                                    ),
+                                  ),
+                                ),
+
+                                child: Icon(
+                                  currentIcon,
+                                  color:
+                                      UiColors.gold,
+                                  size: 38,
+                                ),
+                              ),
+
+                              const SizedBox(
+                                  width: 20),
+
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment
+                                          .start,
+
+                                  children: [
+
+                                    Text(
+                                      currentTitle,
+                                      style:
+                                          UiText.title(
+                                        size: 34,
+                                      ),
+                                    ),
+
+                                    const SizedBox(
+                                        height: 6),
+
+                                    Text(
+                                      currentDescription,
+                                      style:
+                                          UiText.body(
+                                        size: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 30),
+
+                          Text(
+                            "DOSTĘPNE POLITYKI",
+                            style:
+                                UiText.title(size: 22),
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount:
+                                  currentPolicy
+                                      .options.length,
+
+                              itemBuilder: (_, i) {
+
+                                final option =
+                                    currentPolicy
+                                        .options[i];
+
+                                final selected =
+                                    option.id ==
+                                        currentActive;
+
+                                return Material(
+                                  color:
+                                      Colors.transparent,
+
+                                  child: InkWell(
+                                    borderRadius:
+                                        BorderRadius
+                                            .circular(
+                                      18,
+                                    ),
+
+                                    onTap: () {
+                                      widget.onChoose(
+                                        selectedType,
+                                        option.id,
+                                      );
+                                    },
+
+                                    child:
+                                        AnimatedContainer(
+                                      duration:
+                                          const Duration(
+                                        milliseconds:
+                                            180,
+                                      ),
+
+                                      margin:
+                                          const EdgeInsets
+                                              .only(
+                                        bottom: 12,
+                                      ),
+
+                                      padding:
+                                          const EdgeInsets
+                                              .symmetric(
+                                        horizontal: 18,
+                                        vertical: 14,
+                                      ),
+
+                                      decoration:
+                                          BoxDecoration(
+                                        color: selected
+                                            ? UiColors
+                                                .gold
+                                                .withValues(
+                                                alpha:
+                                                    0.16,
+                                              )
+                                            : Colors
+                                                .black26,
+
+                                        borderRadius:
+                                            BorderRadius
+                                                .circular(
+                                          18,
+                                        ),
+
+                                        border:
+                                            Border.all(
+                                          color: selected
+                                              ? UiColors
+                                                  .gold
+                                              : Colors
+                                                  .white10,
+
+                                          width:
+                                              selected
+                                                  ? 2
+                                                  : 1,
+                                        ),
+                                      ),
+
+                                      child: Row(
+                                        children: [
+
+                                          /// ICON
+                                          Container(
+                                            width: 58,
+                                            height: 58,
+
+                                            decoration:
+                                                BoxDecoration(
+                                              color: Colors
+                                                  .black26,
+
+                                              borderRadius:
+                                                  BorderRadius
+                                                      .circular(
+                                                16,
+                                              ),
+                                            ),
+
+                                            child: Icon(
+                                              currentIcon,
+                                              color:
+                                                  UiColors
+                                                      .gold,
+                                              size: 28,
+                                            ),
+                                          ),
+
+                                          const SizedBox(
+                                              width:
+                                                  18),
+
+                                          /// NAME + EFFECTS
+                                          Expanded(
+                                            child:
+                                                Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment
+                                                      .start,
+
+                                              children: [
+
+                                                Row(
+                                                  children: [
+
+                                                    Text(
+                                                      option
+                                                          .label,
+
+                                                      style:
+                                                          TextStyle(
+                                                        color:
+                                                            selected
+                                                                ? Colors.white
+                                                                : Colors.white70,
+
+                                                        fontSize:
+                                                            24,
+
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+
+                                                    const SizedBox(
+                                                        width:
+                                                            18),
+
+                                                    Expanded(
+                                                      child:
+                                                          Wrap(
+                                                        spacing:
+                                                            8,
+                                                        runSpacing:
+                                                            8,
+
+                                                        children: option.effects
+                                                            .map(
+                                                          (
+                                                            e,
+                                                          ) {
+                                                            return buildEffect(
+                                                              e,
+                                                            );
+                                                          },
+                                                        ).toList(),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+
+                                          const SizedBox(
+                                              width:
+                                                  14),
+
+                                          /// ACTIVE
+                                          if (selected)
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets
+                                                      .symmetric(
+                                                horizontal:
+                                                    14,
+                                                vertical:
+                                                    8,
+                                              ),
+
+                                              decoration:
+                                                  BoxDecoration(
+                                                color:
+                                                    Colors
+                                                        .green,
+
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                  20,
+                                                ),
+                                              ),
+
+                                              child:
+                                                  const Row(
+                                                children: [
+
+                                                  Icon(
+                                                    Icons
+                                                        .check,
+                                                    size:
+                                                        16,
+                                                    color:
+                                                        Colors.white,
+                                                  ),
+
+                                                  SizedBox(
+                                                      width:
+                                                          6),
+
+                                                  Text(
+                                                    "AKTYWNA",
+
+                                                    style:
+                                                        TextStyle(
+                                                      color:
+                                                          Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize:
+                                                          11,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -187,232 +641,234 @@ class PolicyPanel extends StatelessWidget {
     );
   }
 
-  Widget buildPolicySection({
+  Widget categoryButton({
+    required String type,
     required IconData icon,
     required String title,
-    required String description,
-    required String type,
-    required Policy policy,
-    required String? activeOptionId,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(18),
 
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(
-          alpha: 0.14,
-        ),
+    final selected =
+        selectedType == type;
 
+    return Material(
+      color: Colors.transparent,
+
+      child: InkWell(
         borderRadius:
-            BorderRadius.circular(22),
+            BorderRadius.circular(18),
 
-        border: Border.all(
-          color: Colors.white10,
-        ),
-      ),
+        onTap: () {
+          setState(() {
+            selectedType = type;
+          });
+        },
 
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        child: AnimatedContainer(
+          duration:
+              const Duration(milliseconds: 180),
 
-        children: [
+          padding:
+              const EdgeInsets.all(16),
 
-          /// TOP
-          Row(
+          decoration: BoxDecoration(
+            color: selected
+                ? UiColors.gold.withValues(
+                    alpha: 0.16,
+                  )
+                : Colors.black26,
+
+            borderRadius:
+                BorderRadius.circular(18),
+
+            border: Border.all(
+              color: selected
+                  ? UiColors.gold
+                  : Colors.white10,
+
+              width: selected ? 2 : 1,
+            ),
+          ),
+
+          child: Row(
             children: [
 
               Container(
-                width: 42,
-                height: 42,
+                width: 52,
+                height: 52,
 
                 decoration: BoxDecoration(
-                  color: UiColors.gold
-                      .withValues(
-                    alpha: 0.12,
-                  ),
+                  color: Colors.black26,
 
                   borderRadius:
-                      BorderRadius.circular(
-                    12,
-                  ),
+                      BorderRadius.circular(16),
                 ),
 
                 child: Icon(
                   icon,
                   color: UiColors.gold,
-                  size: 22,
+                  size: 26,
                 ),
               ),
 
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
 
               Expanded(
-                child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
-
-                  children: [
-
-                    Text(
-                      title,
-                      style:
-                          UiText.title(
-                        size: 24,
-                      ),
-                    ),
-
-                    const SizedBox(height: 2),
-
-                    Text(
-                      description,
-                      style:
-                          UiText.body(
-                        size: 13,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  title,
+                  style:
+                      UiText.title(size: 18),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
 
-          const SizedBox(height: 16),
+  Widget buildEffect(
+    PolicyEffect effect,
+  ) {
 
-          /// BUTTONS
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
+    IconData icon = Icons.info;
 
-            children:
-                policy.options.map((option) {
+    String text = "";
 
-              final selected =
-                  activeOptionId ==
-                      option.id;
+    bool positive = true;
 
-              return InkWell(
-                borderRadius:
-                    BorderRadius.circular(
-                  16,
+    switch (effect.type) {
+
+      case "tax_rate":
+
+        final percent =
+            ((effect.value - 1) * 100)
+                .round();
+
+        icon = Icons.attach_money;
+
+        text =
+            "${percent > 0 ? "+" : ""}$percent% podatki";
+
+        positive = percent > 0;
+
+        break;
+
+      case "morale":
+
+        icon = Icons.sentiment_satisfied;
+
+        text =
+            "${effect.value > 0 ? "+" : ""}${effect.value.toInt()} morale";
+
+        positive = effect.value > 0;
+
+        break;
+
+      case "food_consumption":
+
+        final percent =
+            ((effect.value - 1) * 100)
+                .round();
+
+        icon = Icons.restaurant;
+
+        text =
+            "${percent > 0 ? "+" : ""}$percent% żywność";
+
+        positive = percent < 0;
+
+        break;
+
+      case "production_speed":
+
+        final percent =
+            ((effect.value - 1) * 100)
+                .round();
+
+        icon = Icons.factory;
+
+        text =
+            "${percent > 0 ? "+" : ""}$percent% produkcja";
+
+        positive = percent > 0;
+
+        break;
+
+      case "population_growth":
+
+        final percent =
+            ((effect.value - 1) * 100)
+                .round();
+
+        icon = Icons.groups;
+
+        text =
+            "${percent > 0 ? "+" : ""}$percent% populacja";
+
+        positive = percent > 0;
+
+        break;
+    }
+
+    return Container(
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 6,
+      ),
+
+      decoration: BoxDecoration(
+        color: positive
+            ? Colors.green.withValues(
+                alpha: 0.14,
+              )
+            : Colors.red.withValues(
+                alpha: 0.14,
+              ),
+
+        borderRadius:
+            BorderRadius.circular(12),
+
+        border: Border.all(
+          color: positive
+              ? Colors.green.withValues(
+                  alpha: 0.35,
+                )
+              : Colors.red.withValues(
+                  alpha: 0.35,
                 ),
+        ),
+      ),
 
-                onTap: () {
-                  onChoose(
-                    type,
-                    option.id,
-                  );
-                },
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
 
-                child: AnimatedContainer(
-                  duration:
-                      const Duration(
-                    milliseconds: 180,
-                  ),
+        children: [
 
-                  height: 52,
+          Icon(
+            icon,
+            size: 14,
 
-                  padding:
-                      const EdgeInsets.symmetric(
-                    horizontal: 18,
-                  ),
+            color: positive
+                ? Colors.greenAccent
+                : Colors.redAccent,
+          ),
 
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? UiColors.gold
-                        : Colors.black
-                            .withValues(
-                            alpha: 0.22,
-                          ),
+          const SizedBox(width: 5),
 
-                    borderRadius:
-                        BorderRadius.circular(
-                      16,
-                    ),
+          Text(
+            text,
 
-                    border: Border.all(
-                      color: selected
-                          ? UiColors.gold
-                          : Colors.white10,
-                    ),
+            style: TextStyle(
+              color: positive
+                  ? Colors.greenAccent
+                  : Colors.redAccent,
 
-                    boxShadow: selected
-                        ? [
-                            BoxShadow(
-                              color: UiColors
-                                  .gold
-                                  .withValues(
-                                alpha: 0.25,
-                              ),
+              fontWeight:
+                  FontWeight.bold,
 
-                              blurRadius: 10,
-                            ),
-                          ]
-                        : [],
-                  ),
-
-                  child: Row(
-                    mainAxisSize:
-                        MainAxisSize.min,
-
-                    children: [
-
-                      Text(
-                        option.label,
-
-                        style:
-                            UiText.title(
-                          size: 15,
-                        ).copyWith(
-                          color: selected
-                              ? Colors.white
-                              : Colors.white70,
-                        ),
-                      ),
-
-                      if (selected) ...[
-
-                        const SizedBox(
-                            width: 10),
-
-                        Container(
-                          padding:
-                              const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-
-                          decoration:
-                              BoxDecoration(
-                            color:
-                                Colors.green,
-
-                            borderRadius:
-                                BorderRadius.circular(
-                              20,
-                            ),
-                          ),
-
-                          child: const Text(
-                            "AKTYWNA",
-
-                            style: TextStyle(
-                              color:
-                                  Colors.white,
-
-                              fontWeight:
-                                  FontWeight.bold,
-
-                              fontSize: 9,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
+              fontSize: 12,
+            ),
           ),
         ],
       ),

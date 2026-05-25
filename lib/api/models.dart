@@ -239,8 +239,7 @@ class AvailableBuilding {
           : null,
       productionPerHour:
           (json['productionPerHour'] as num?)?.toDouble() ?? 0.0,
-      buildCostMoney:
-          (json['buildCostMoney'] as num?)?.toDouble() ?? 0.0,
+      buildCostMoney: (json['buildCostMoney'] as num?)?.toDouble() ?? 0.0,
       maintenanceCost:
           (json['maintenanceCost'] as num?)?.toDouble() ?? 0.0,
       upgradeCostMoney:
@@ -404,15 +403,16 @@ class Settlement {
   final List<Resource> resources;
 
   final int storageCapacity;
+
   final double storageUsed;
   final double storageFree;
 
   final int population;
 
   final double morale;
-
   final double money;
-
+  final double lastNetIncome;
+  final double lastTaxPerPerson;
   final double moraleChangePerHour;
 
   final List<String> moraleBreakdown;
@@ -420,10 +420,14 @@ class Settlement {
   final List<Industry> industries;
 
   final String? activeTaxPolicy;
-
   final String? activeFoodPolicy;
-
   final String? activeWorkPolicy;
+
+  final double foodConsumptionPerHour;
+  final double woodConsumptionPerHour;
+  final double foodSatisfaction;
+  final bool hasWoodShortage;
+  final bool showWelcome;
 
   Settlement({
     required this.id,
@@ -441,91 +445,55 @@ class Settlement {
     required this.activeTaxPolicy,
     required this.activeFoodPolicy,
     required this.activeWorkPolicy,
+    required this.foodConsumptionPerHour,
+    required this.woodConsumptionPerHour,
+    required this.foodSatisfaction,
+    required this.hasWoodShortage,
+    required this.lastNetIncome,
+    required this.lastTaxPerPerson,
+    required this.showWelcome,
   });
 
   factory Settlement.fromJson(
     Map<String, dynamic> json,
-  ) {
-    return Settlement(
-      id: json['id']?.toString() ?? '',
-
-      name: json['name']?.toString(),
-
-      resources:
-          (json['resources']
-                      as List<dynamic>? ??
-                  [])
-              .map(
-                (e) => Resource.fromJson(e),
-              )
-              .toList(),
-
-      storageCapacity:
-          json['storageCapacity'] ?? 0,
-
-      storageUsed:
-          (json['storageUsed'] as num?)
-                  ?.toDouble() ??
-              0.0,
-
-      storageFree:
-          (json['storageFree'] as num?)
-                  ?.toDouble() ??
-              0.0,
-
-      population:
-          json['population'] ?? 0,
-
-      morale:
-          (json['morale'] as num?)
-                  ?.toDouble() ??
-              0.0,
-
-      money:
-          (json['money'] as num?)
-                  ?.toDouble() ??
-              0.0,
-
-      moraleChangePerHour:
-          (json['moraleChangePerHour']
-                      as num?)
-                  ?.toDouble() ??
-              0.0,
-
-      moraleBreakdown:
-          (json['moraleBreakdown']
-                      as List<dynamic>? ??
-                  [])
-              .map((e) => e.toString())
-              .toList(),
-
-      industries:
-          (json['industries']
-                      as List<dynamic>? ??
-                  [])
-              .map(
-                (e) => Industry.fromJson(e),
-              )
-              .toList(),
-
-      activeTaxPolicy:
-          json['activeTaxPolicy']
-              ?.toString(),
-
-      activeFoodPolicy:
-          json['activeFoodPolicy']
-              ?.toString(),
-
-      activeWorkPolicy:
-          json['activeWorkPolicy']
-              ?.toString(),
-    );
-  }
+  ) =>
+      Settlement(
+        id: json["id"]?.toString() ?? "",
+        name: json["name"]?.toString(),
+        resources: (json["resources"] as List<dynamic>? ?? [])
+            .map((e) => Resource.fromJson(e))
+            .toList(),
+        storageCapacity: json["storageCapacity"] ?? 0,
+        storageUsed: (json["storageUsed"] as num?)?.toDouble() ?? 0,
+        storageFree: (json["storageFree"] as num?)?.toDouble() ?? 0,
+        population: json["population"] ?? 0,
+        morale: (json["morale"] as num?)?.toDouble() ?? 0,
+        money: (json["money"] as num?)?.toDouble() ?? 0,
+        lastNetIncome: (json["lastNetIncome"] as num?)?.toDouble() ?? 0,
+        lastTaxPerPerson: (json["lastTaxPerPerson"] as num?)?.toDouble() ?? 0,
+        moraleChangePerHour: (json["moraleChangePerHour"] as num?)?.toDouble() ?? 0,
+        moraleBreakdown: (json["moraleBreakdown"] as List<dynamic>? ?? [])
+            .map((e) => e.toString())
+            .toList(),
+        industries: (json["industries"] as List<dynamic>? ?? [])
+            .map((e) => Industry.fromJson(e))
+            .toList(),
+        activeTaxPolicy: json["activeTaxPolicy"]?.toString(),
+        activeFoodPolicy: json["activeFoodPolicy"]?.toString(),
+        activeWorkPolicy: json["activeWorkPolicy"]?.toString(),
+        foodConsumptionPerHour: (json["foodConsumptionPerHour"] as num?) ?.toDouble() ?? 0,
+        woodConsumptionPerHour: (json["woodConsumptionPerHour"] as num?) ?.toDouble() ?? 0,
+        foodSatisfaction: (json["foodSatisfaction"] as num?) ?.toDouble() ?? 0,
+        hasWoodShortage: json["hasWoodShortage"] ?? false,
+        showWelcome: json["showWelcome"] ?? false,
+      );
 }
 
 class BuildingDefinition {
   final String type;
+
   final String name;
+
   final String assetPath;
 
   const BuildingDefinition({
@@ -537,9 +505,12 @@ class BuildingDefinition {
 
 class Event {
   final String id;
+
   final String? type;
   final String? scope;
+
   final int remainingSeconds;
+
   final bool isMine;
 
   Event({
@@ -550,21 +521,24 @@ class Event {
     required this.isMine,
   });
 
-  factory Event.fromJson(Map<String, dynamic> json) {
-    return Event(
-      id: json['id']?.toString() ?? '',
-      type: json['type']?.toString(),
-      scope: json['scope']?.toString(),
-      remainingSeconds: json['remainingSeconds'] ?? 0,
-      isMine: json['isMine'] ?? false,
-    );
-  }
+  factory Event.fromJson(
+    Map<String, dynamic> json,
+  ) =>
+      Event(
+        id: json["id"]?.toString() ?? "",
+        type: json["type"]?.toString(),
+        scope: json["scope"]?.toString(),
+        remainingSeconds: json["remainingSeconds"] ?? 0,
+        isMine: json["isMine"] ?? false,
+      );
 }
 
 class IndustryReward {
   final int level;
+
   final String title;
   final String description;
+
   final bool unlocked;
 
   IndustryReward({
@@ -576,30 +550,27 @@ class IndustryReward {
 
   factory IndustryReward.fromJson(
     Map<String, dynamic> json,
-  ) {
-    return IndustryReward(
-      level: json["level"] ?? 0,
-
-      title:
-          json["title"]?.toString() ?? "",
-
-      description:
-          json["description"]?.toString() ?? "",
-
-      unlocked:
-          json["unlocked"] ?? false,
-    );
-  }
+  ) =>
+      IndustryReward(
+        level: json["level"] ?? 0,
+        title: json["title"]?.toString() ?? "",
+        description: json["description"]?.toString() ?? "",
+        unlocked: json["unlocked"] ?? false,
+      );
 }
 
 class Industry {
   final String type;
+
   final String? name;
   final String? description;
+
   final int level;
+
   final double xp;
   final double nextLevelXP;
   final double progressPercent;
+
   final List<IndustryReward> rewards;
 
   Industry({
@@ -615,50 +586,24 @@ class Industry {
 
   factory Industry.fromJson(
     Map<String, dynamic> json,
-  ) {
-    return Industry(
-      type: json['type']?.toString() ?? '',
-
-      name: json['name']?.toString(),
-
-      description:
-          json['description']?.toString(),
-
-      level: json['level'] ?? 0,
-
-      xp:
-          (json['xp'] as num?)
-                  ?.toDouble() ??
-              0.0,
-
-      nextLevelXP:
-          (json['nextLevelXP'] as num?)
-                  ?.toDouble() ??
-              0.0,
-
-      progressPercent:
-          (json['progressPercent']
-                      as num?)
-                  ?.toDouble() ??
-              0.0,
-
-      rewards:
-          (json['rewards']
-                      as List<dynamic>? ??
-                  [])
-              .map(
-                (e) =>
-                    IndustryReward.fromJson(
-                  e,
-                ),
-              )
-              .toList(),
-    );
-  }
+  ) =>
+      Industry(
+        type: json["type"]?.toString() ?? "",
+        name: json["name"]?.toString(),
+        description: json["description"]?.toString(),
+        level: json["level"] ?? 0,
+        xp: (json["xp"] as num?)?.toDouble() ?? 0,
+        nextLevelXP: (json["nextLevelXP"] as num?)?.toDouble() ?? 0,
+        progressPercent: (json["progressPercent"] as num?)?.toDouble() ?? 0,
+        rewards: (json["rewards"] as List<dynamic>? ?? [])
+            .map((e) => IndustryReward.fromJson(e))
+            .toList(),
+      );
 }
 
 class GameMap {
   final int width;
+
   final int height;
 
   GameMap({
@@ -666,23 +611,21 @@ class GameMap {
     required this.height,
   });
 
-  factory GameMap.fromJson(Map<String, dynamic> json) {
-    return GameMap(
-      width: json['width'] ?? 0,
-      height: json['height'] ?? 0,
-    );
-  }
+  factory GameMap.fromJson(
+    Map<String, dynamic> json,
+  ) =>
+      GameMap(
+        width: json["width"] ?? 0,
+        height: json["height"] ?? 0,
+      );
 }
 
 class MarketResource {
   final String resourceType;
 
   final double quantity;
-
   final double currentPrice;
-
   final double buyPrice;
-
   final double sellPrice;
 
   MarketResource({
@@ -695,34 +638,14 @@ class MarketResource {
 
   factory MarketResource.fromJson(
     Map<String, dynamic> json,
-  ) {
-    return MarketResource(
-      resourceType:
-          json["resourceType"]
-                  ?.toString() ??
-              "",
-
-      quantity:
-          (json["quantity"] as num?)
-                  ?.toDouble() ??
-              0,
-
-      currentPrice:
-          (json["currentPrice"] as num?)
-                  ?.toDouble() ??
-              0,
-
-      buyPrice:
-          (json["buyPrice"] as num?)
-                  ?.toDouble() ??
-              0,
-
-      sellPrice:
-          (json["sellPrice"] as num?)
-                  ?.toDouble() ??
-              0,
-    );
-  }
+  ) =>
+      MarketResource(
+        resourceType: json["resourceType"]?.toString() ?? "",
+        quantity: (json["quantity"] as num?)?.toDouble() ?? 0,
+        currentPrice: (json["currentPrice"] as num?)?.toDouble() ?? 0,
+        buyPrice: (json["buyPrice"] as num?)?.toDouble() ?? 0,
+        sellPrice: (json["sellPrice"] as num?)?.toDouble() ?? 0,
+      );
 }
 
 class MarketTransport {
@@ -746,48 +669,60 @@ class MarketTransport {
 
   factory MarketTransport.fromJson(
     Map<String, dynamic> json,
-  ) {
-    return MarketTransport(
-      id: json["id"]?.toString() ?? "",
+  ) =>
+      MarketTransport(
+        id: json["id"]?.toString() ?? "",
+        resourceType: json["resourceType"]?.toString() ?? "",
+        quantity: (json["quantity"] as num?)?.toDouble() ?? 0,
+        arrivalTime: json["arrivalTime"] != null
+            ? DateTime.tryParse(json["arrivalTime"].toString())
+            : null,
+        remainingSeconds: json["remainingSeconds"] ?? 0,
+      );
+}
 
-      resourceType:
-          json["resourceType"]
-                  ?.toString() ??
-              "",
+class PolicyEffect {
+  final String type;
 
-      quantity:
-          (json["quantity"] as num?)
-                  ?.toDouble() ??
-              0,
+  final double value;
 
-      arrivalTime:
-          json["arrivalTime"] != null
-              ? DateTime.tryParse(
-                  json["arrivalTime"],
-                )
-              : null,
+  PolicyEffect({
+    required this.type,
+    required this.value,
+  });
 
-      remainingSeconds:
-          json["remainingSeconds"] ?? 0,
-    );
-  }
+  factory PolicyEffect.fromJson(
+    Map<String, dynamic> json,
+  ) =>
+      PolicyEffect(
+        type: json["type"]?.toString() ?? "",
+        value: (json["value"] as num?)?.toDouble() ?? 0,
+      );
 }
 
 class PolicyOption {
   final String id;
+
   final String label;
+
+  final List<PolicyEffect> effects;
 
   PolicyOption({
     required this.id,
     required this.label,
+    required this.effects,
   });
 
-  factory PolicyOption.fromJson(Map<String, dynamic> json) {
-    return PolicyOption(
-      id: json['id']?.toString() ?? '',
-      label: json['label']?.toString() ?? '',
-    );
-  }
+  factory PolicyOption.fromJson(
+    Map<String, dynamic> json,
+  ) =>
+      PolicyOption(
+        id: json["id"]?.toString() ?? "",
+        label: json["label"]?.toString() ?? "",
+        effects: (json["effects"] as List<dynamic>? ?? [])
+            .map((e) => PolicyEffect.fromJson(e))
+            .toList(),
+      );
 }
 
 class Policy {
@@ -817,11 +752,8 @@ class Policy {
 
 class Quest {
   final String id;
-
   final String description;
-
   final bool isCompleted;
-
   final int stage;
 
   Quest({
@@ -831,27 +763,16 @@ class Quest {
     required this.stage,
   });
 
-  factory Quest.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    return Quest(
-      id: json["id"]?.toString() ?? "",
-
-      description:
-          json["description"]?.toString() ??
-              "",
-
-      isCompleted:
-          json["isCompleted"] ?? false,
-
-      stage: json["stage"] ?? 0,
-    );
-  }
+  factory Quest.fromJson(Map<String, dynamic> json) => Quest(
+        id: json["id"]?.toString() ?? "",
+        description: json["description"]?.toString() ?? "",
+        isCompleted: json["isCompleted"] ?? false,
+        stage: json["stage"] ?? 0,
+      );
 }
 
 class QuestResponse {
   final List<Quest> active;
-
   final List<Quest> completed;
 
   QuestResponse({
@@ -859,86 +780,45 @@ class QuestResponse {
     required this.completed,
   });
 
-  factory QuestResponse.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    return QuestResponse(
-      active:
-          (json["active"]
-                      as List<dynamic>? ??
-                  [])
-              .map(
-                (e) => Quest.fromJson(e),
-              )
-              .toList(),
-
-      completed:
-          (json["completed"]
-                      as List<dynamic>? ??
-                  [])
-              .map(
-                (e) => Quest.fromJson(e),
-              )
-              .toList(),
-    );
-  }
+  factory QuestResponse.fromJson(Map<String, dynamic> json) =>
+      QuestResponse(
+        active: (json["active"] as List<dynamic>? ?? [])
+            .map((e) => Quest.fromJson(e))
+            .toList(),
+        completed: (json["completed"] as List<dynamic>? ?? [])
+            .map((e) => Quest.fromJson(e))
+            .toList(),
+      );
 }
 
 class RankingEntry {
   final String settlementId;
-
-  final String settlementName;
+  final String username;
 
   final int population;
 
   final double money;
-
   final double morale;
-
   final double score;
 
   RankingEntry({
     required this.settlementId,
-    required this.settlementName,
+    required this.username,
     required this.population,
     required this.money,
     required this.morale,
     required this.score,
   });
 
-  factory RankingEntry.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    return RankingEntry(
-      settlementId:
-          json["settlementId"]
-                  ?.toString() ??
-              "",
-
-      settlementName:
-          json["settlementName"]
-                  ?.toString() ??
-              "",
-
-      population:
-          json["population"] ?? 0,
-
-      money:
-          (json["money"] as num?)
-                  ?.toDouble() ??
-              0,
-
-      morale:
-          (json["morale"] as num?)
-                  ?.toDouble() ??
-              0,
-
-      score:
-          (json["score"] as num?)
-                  ?.toDouble() ??
-              0,
-    );
-  }
+  factory RankingEntry.fromJson(Map<String, dynamic> json) =>
+      RankingEntry(
+        settlementId: json["settlementId"]?.toString() ?? "",
+        username: json["username"]?.toString() ?? "",
+        population: json["population"] ?? 0,
+        money: (json["money"] as num?)?.toDouble() ?? 0.0,
+        morale: (json["morale"] as num?)?.toDouble() ?? 0.0,
+        score: (json["score"] as num?)?.toDouble() ?? 0.0,
+      );
 }
 
 class MarketHistoryEntry {
@@ -947,11 +827,8 @@ class MarketHistoryEntry {
   final String resourceType;
 
   final double quantity;
-
   final double pricePerUnit;
-
   final double totalPrice;
-
   final double commission;
 
   final DateTime? executedAt;
@@ -968,41 +845,16 @@ class MarketHistoryEntry {
 
   factory MarketHistoryEntry.fromJson(
     Map<String, dynamic> json,
-  ) {
-    return MarketHistoryEntry(
-      id: json["id"]?.toString() ?? "",
-
-      resourceType:
-          json["resourceType"]
-                  ?.toString() ??
-              "",
-
-      quantity:
-          (json["quantity"] as num?)
-                  ?.toDouble() ??
-              0,
-
-      pricePerUnit:
-          (json["pricePerUnit"] as num?)
-                  ?.toDouble() ??
-              0,
-
-      totalPrice:
-          (json["totalPrice"] as num?)
-                  ?.toDouble() ??
-              0,
-
-      commission:
-          (json["commission"] as num?)
-                  ?.toDouble() ??
-              0,
-
-      executedAt:
-          json["executedAt"] != null
-              ? DateTime.tryParse(
-                  json["executedAt"],
-                )
-              : null,
-    );
-  }
+  ) =>
+      MarketHistoryEntry(
+        id: json["id"]?.toString() ?? "",
+        resourceType: json["resourceType"]?.toString() ?? "",
+        quantity: (json["quantity"] as num?)?.toDouble() ?? 0.0,
+        pricePerUnit: (json["pricePerUnit"] as num?)?.toDouble() ?? 0.0,
+        totalPrice: (json["totalPrice"] as num?)?.toDouble() ?? 0.0,
+        commission: (json["commission"] as num?)?.toDouble() ?? 0.0,
+        executedAt: json["executedAt"] != null
+            ? DateTime.tryParse(json["executedAt"].toString())
+            : null,
+      );
 }

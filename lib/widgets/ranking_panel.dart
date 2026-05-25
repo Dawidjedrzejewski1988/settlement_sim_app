@@ -18,44 +18,72 @@ class RankingPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        width: 900,
+        width: 920,
         height: 720,
+
         padding: const EdgeInsets.all(24),
+
         decoration: BoxDecoration(
-          borderRadius:
-              BorderRadius.circular(26),
+          borderRadius: BorderRadius.circular(28),
+
           border: Border.all(
             color: UiColors.gold,
             width: 2,
           ),
+
           gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
+
             colors: [
-              Color(0xFF6A3813),
-              Color(0xFF3B1C08),
-              Color(0xFF1F0D04),
+              Color(0xFF6B3610),
+              Color(0xFF3A1906),
+              Color(0xFF190902),
             ],
           ),
+
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black54,
+              blurRadius: 20,
+              offset: Offset(0, 10),
+            ),
+          ],
         ),
+
         child: Column(
           children: [
+
             Row(
               children: [
+
                 Expanded(
                   child: Text(
-                    "Ranking",
-                    style: UiText.title(
-                      size: 32,
-                    ),
+                    "Ranking Graczy",
+                    style: UiText.title(size: 34),
                   ),
                 ),
 
-                IconButton(
-                  onPressed: onClose,
-                  icon: const Icon(
-                    Icons.close,
-                    color: Colors.white,
+                InkWell(
+                  onTap: onClose,
+
+                  borderRadius: BorderRadius.circular(12),
+
+                  child: Container(
+                    width: 42,
+                    height: 42,
+
+                    alignment: Alignment.center,
+
+                    decoration: BoxDecoration(
+                      color: Colors.black26,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
@@ -64,100 +92,117 @@ class RankingPanel extends StatelessWidget {
             const SizedBox(height: 24),
 
             Expanded(
-              child: ListView.separated(
+              child: ListView.builder(
                 itemCount: ranking.length,
-                separatorBuilder:
-                    (_, __) =>
-                        const SizedBox(
-                  height: 12,
-                ),
-                itemBuilder:
-                    (context, index) {
-                  final entry =
-                      ranking[index];
+
+                itemBuilder: (context, index) {
+                  final entry = ranking[index];
+
+                  final isTop1 = index == 0;
+                  final isTop2 = index == 1;
+                  final isTop3 = index == 2;
+
+                  Color borderColor = Colors.white10;
+
+                  if (isTop1) borderColor = Colors.amber;
+                  if (isTop2) borderColor = Colors.grey;
+                  if (isTop3) borderColor = Colors.brown;
 
                   return Container(
-                    padding:
-                        const EdgeInsets.all(
-                      18,
-                    ),
+                    margin: const EdgeInsets.only(bottom: 12),
+
+                    padding: const EdgeInsets.all(18),
+
                     decoration: BoxDecoration(
-                      color: Colors.black
-                          .withValues(
-                        alpha: 0.20,
-                      ),
-                      borderRadius:
-                          BorderRadius.circular(
-                        22,
-                      ),
+                      color: Colors.black.withValues(alpha: 0.22),
+
+                      borderRadius: BorderRadius.circular(22),
+
                       border: Border.all(
-                        color:
-                            Colors.white10,
+                        color: borderColor,
+                        width: 1.5,
                       ),
                     ),
+
                     child: Row(
                       children: [
-                        SizedBox(
-                          width: 60,
+
+                        Container(
+                          width: 62,
+                          alignment: Alignment.center,
+
                           child: Text(
                             "#${index + 1}",
-                            style:
-                                UiText.title(
-                              size: 28,
+
+                            style: UiText.title(size: 30).copyWith(
+                              color: isTop1
+                                  ? Colors.amber
+                                  : Colors.white,
                             ),
                           ),
                         ),
+
+                        const SizedBox(width: 12),
 
                         Expanded(
                           flex: 3,
-                          child: Text(
-                            entry
-                                .settlementName,
-                            style:
-                                UiText.title(
-                              size: 24,
-                            ),
+
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+
+                            children: [
+
+                              Text(
+                                entry.username,
+
+                                style: UiText.title(size: 22),
+                              ),
+                            ],
                           ),
                         ),
 
-                        Expanded(
-                          child: Text(
-                            "👥 ${entry.population}",
-                            style:
-                                UiText.body(),
-                          ),
+                        statBox(
+                          icon: "👥",
+                          value: entry.population.toString(),
                         ),
 
-                        Expanded(
-                          child: Text(
-                            "😊 ${entry.morale.toStringAsFixed(0)}%",
-                            style:
-                                UiText.body(),
-                          ),
+                        statBox(
+                          icon: "😊",
+                          value: "${entry.morale.toStringAsFixed(0)}%",
                         ),
 
-                        Expanded(
-                          child: Text(
-                            "💰 ${entry.money.toStringAsFixed(0)}",
-                            style:
-                                UiText.body(),
-                          ),
+                        statBox(
+                          icon: "💰",
+                          value: entry.money.toStringAsFixed(0),
                         ),
 
-                        Expanded(
+                        SizedBox(
+                          width: 140,
+
                           child: Align(
-                            alignment:
-                                Alignment
-                                    .centerRight,
-                            child: Text(
-                              entry.score
-                                  .toStringAsFixed(
-                                0,
-                              ),
-                              style:
-                                  UiText.title(
-                                size: 26,
-                              ),
+                            alignment: Alignment.centerRight,
+
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+
+                              children: [
+
+                                Text(
+                                  "WYNIK",
+
+                                  style: UiText.body(size: 10).copyWith(
+                                    color: Colors.white54,
+                                  ),
+                                ),
+
+                                Text(
+                                  entry.score.toStringAsFixed(0),
+
+                                  style: UiText.title(size: 28).copyWith(
+                                    color: UiColors.gold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -169,6 +214,34 @@ class RankingPanel extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget statBox({
+    required String icon,
+    required String value,
+  }) {
+    return SizedBox(
+      width: 100,
+
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+
+        children: [
+
+          Text(
+            icon,
+            style: const TextStyle(fontSize: 16),
+          ),
+
+          const SizedBox(width: 6),
+
+          Text(
+            value,
+            style: UiText.body(),
+          ),
+        ],
       ),
     );
   }

@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import '../game/settlement_game.dart';
 import '../api/services.dart';
 import '../api/models.dart';
+import '../api/error_utils.dart';
 
 import '../widgets/top_hud.dart';
 import '../widgets/build_panel.dart';
@@ -17,6 +17,7 @@ import '../widgets/quest_panel.dart';
 import '../widgets/ranking_panel.dart';
 import '../widgets/event_panel.dart';
 import '../widgets/economy_panel.dart';
+import '../widgets/welcome_dialog.dart';
 
 import '../ui/ui_system.dart';
 
@@ -75,6 +76,7 @@ class _GameScreenState extends State<GameScreen> {
   bool offlineChecked = false;
   bool showIndustries = false;
   bool showEconomy = false;
+  bool welcomeShown = false;
 
   double woodPerSec = 0;
   double plankPerSec = 0;
@@ -194,12 +196,19 @@ class _GameScreenState extends State<GameScreen> {
         population: settlementData!.population,
         morale: settlementData!.morale,
         money: settlementData!.money + moneyPerSec,
+        lastNetIncome: settlementData!.lastNetIncome,
+        lastTaxPerPerson: settlementData!.lastTaxPerPerson,
         moraleChangePerHour: settlementData!.moraleChangePerHour,
         moraleBreakdown: settlementData!.moraleBreakdown,
         industries: settlementData!.industries,
         activeTaxPolicy: settlementData!.activeTaxPolicy,
         activeFoodPolicy: settlementData!.activeFoodPolicy,
         activeWorkPolicy: settlementData!.activeWorkPolicy,
+        foodConsumptionPerHour: settlementData!.foodConsumptionPerHour,
+        woodConsumptionPerHour: settlementData!.woodConsumptionPerHour,
+        foodSatisfaction: settlementData!.foodSatisfaction,
+        hasWoodShortage: settlementData!.hasWoodShortage,
+        showWelcome: false,
       );
     });
   }
@@ -245,30 +254,65 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-  void showError(dynamic e) {
-    String text = "Nieznany błąd";
+  void showError(Object e) {
+    final text = extractErrorMessage(e);
 
-    if (e is DioException) {
-      final data = e.response?.data;
+    if (!mounted) return;
 
-      if (data is Map && data["error"] != null) {
-        text = data["error"].toString();
-      } else if (data is String) {
-        text = data;
-      } else {
-        text = e.message ?? text;
-      }
-    } else {
-      text = e.toString();
-    }
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) {
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            Navigator.of(context).pop();
+          }
+        });
 
-    debugPrint(e.toString());
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.red,
-        content: Text(text),
-      ),
+        return Center(
+          child: Container(
+            width: 420,
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2A1208),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: Colors.redAccent,
+                width: 2,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black54,
+                  blurRadius: 20,
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.error,
+                    color: Colors.redAccent,
+                    size: 34,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      text,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -284,6 +328,22 @@ class _GameScreenState extends State<GameScreen> {
   Future<void> loadSettlement() async {
     try {
       final settlement = await settlementService.getSettlement();
+
+      final showWelcome = settlement.showWelcome;
+
+      if (showWelcome && !welcomeShown) {
+        welcomeShown = true;
+
+        if (!mounted) return;
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const WelcomeDialog(),
+          );
+        });
+      }
 
       if (!mounted) return;
 
@@ -314,6 +374,8 @@ class _GameScreenState extends State<GameScreen> {
       for (final e in data) {
         if (!knownEvents.contains(e.id)) {
           knownEvents.add(e.id);
+
+          if (!mounted) return;
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -662,7 +724,6 @@ class _GameScreenState extends State<GameScreen> {
           Positioned.fill(
             child: GameWidget(game: game),
           ),
-
           TopHud(
             wood: resource("Wood"),
             plank: resource("Plank"),
@@ -678,19 +739,16 @@ class _GameScreenState extends State<GameScreen> {
             moraleBreakdown: settlementData?.moraleBreakdown ?? [],
             population: settlementData?.population ?? 0,
           ),
-
           Positioned(
             left: 18,
             top: 100,
             child: EventPanel(events: events),
           ),
-
           if (showBuildPanel)
             BuildPanel(
               buildings: availableBuildings,
               onSelect: selectBuilding,
             ),
-
           if (showMarket)
             MarketPanel(
               resources: marketResources,
@@ -702,7 +760,6 @@ class _GameScreenState extends State<GameScreen> {
               },
               onTrade: tradeMarket,
             ),
-
           if (showPolicy &&
               taxPolicy != null &&
               foodPolicy != null &&
@@ -733,7 +790,6 @@ class _GameScreenState extends State<GameScreen> {
                 setState(() {});
               },
             ),
-
           if (showIndustries)
             IndustryPanel(
               industries: industries,
@@ -743,7 +799,6 @@ class _GameScreenState extends State<GameScreen> {
                 });
               },
             ),
-
           if (showQuests && questData != null)
             QuestPanel(
               quests: questData!,
@@ -753,7 +808,6 @@ class _GameScreenState extends State<GameScreen> {
                 });
               },
             ),
-
           if (showRanking)
             RankingPanel(
               ranking: ranking,
@@ -763,7 +817,6 @@ class _GameScreenState extends State<GameScreen> {
                 });
               },
             ),
-
           if (showEconomy && settlementData != null)
             EconomyPanel(
               settlement: settlementData!,
@@ -779,7 +832,6 @@ class _GameScreenState extends State<GameScreen> {
                 });
               },
             ),
-
           if (selectedBuilding != null)
             BuildingSidePanel(
               building: selectedBuilding!,
@@ -793,7 +845,6 @@ class _GameScreenState extends State<GameScreen> {
                 });
               },
             ),
-
           Positioned(
             right: 18,
             bottom: 18,
@@ -809,9 +860,7 @@ class _GameScreenState extends State<GameScreen> {
                       onTap: cancelBuildMode,
                     ),
                   ),
-
                 if (selectedType != null) const SizedBox(height: 10),
-
                 SizedBox(
                   width: 180,
                   child: UiButton(
@@ -827,9 +876,7 @@ class _GameScreenState extends State<GameScreen> {
                     },
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 SizedBox(
                   width: 180,
                   child: UiButton(
@@ -850,9 +897,7 @@ class _GameScreenState extends State<GameScreen> {
                     },
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 SizedBox(
                   width: 180,
                   child: UiButton(
@@ -872,9 +917,7 @@ class _GameScreenState extends State<GameScreen> {
                     },
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 SizedBox(
                   width: 180,
                   child: UiButton(
@@ -894,9 +937,7 @@ class _GameScreenState extends State<GameScreen> {
                     },
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 SizedBox(
                   width: 180,
                   child: UiButton(
@@ -916,9 +957,7 @@ class _GameScreenState extends State<GameScreen> {
                     },
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 SizedBox(
                   width: 180,
                   child: UiButton(
@@ -938,9 +977,7 @@ class _GameScreenState extends State<GameScreen> {
                     },
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 SizedBox(
                   width: 180,
                   child: UiButton(
@@ -959,7 +996,6 @@ class _GameScreenState extends State<GameScreen> {
               ],
             ),
           ),
-
           if (loading)
             Positioned.fill(
               child: Container(
