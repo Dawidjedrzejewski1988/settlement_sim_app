@@ -1,18 +1,18 @@
 import 'package:dio/dio.dart';
 
-String extractErrorMessage(Object error){
-  if(error is DioException){
+String extractErrorMessage(Object error) {
+  if (error is DioException) {
     final data = error.response?.data;
 
-    if(data is Map<String,dynamic>){
+    if (data is Map<String, dynamic>) {
       final message = data["error"];
 
-      if(message is String && message.isNotEmpty){
+      if (message is String && message.isNotEmpty) {
         return message;
       }
     }
 
-    if(error.type == DioExceptionType.connectionError){
+    if (error.type == DioExceptionType.connectionError) {
       return "Brak połączenia z serwerem";
     }
   }

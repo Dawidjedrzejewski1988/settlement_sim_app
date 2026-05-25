@@ -97,13 +97,11 @@ class _SessionsScreenState extends State<SessionsScreen> {
               fit: BoxFit.cover,
             ),
           ),
-
           Positioned.fill(
             child: Container(
               color: Colors.black.withValues(alpha: 0.55),
             ),
           ),
-
           Center(
             child: Container(
               width: 700,
@@ -123,9 +121,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
                   Expanded(
                     child: loading
                         ? const Center(child: CircularProgressIndicator())
@@ -173,7 +169,6 @@ class _SessionsScreenState extends State<SessionsScreen> {
                                         ],
                                       ),
                                     ),
-
                                     ElevatedButton(
                                       onPressed: () => joinSession(s.id),
                                       child: const Text("Dołącz"),

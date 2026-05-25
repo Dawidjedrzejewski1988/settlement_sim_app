@@ -5,19 +5,21 @@ import 'package:flutter/material.dart';
 
 import 'constants/game_constants.dart';
 import 'utils/iso_utils.dart';
-import '../api/services.dart';
+
 import '../api/models.dart';
+import '../api/services.dart';
 
 import 'components/build_preview_component.dart';
 import 'components/building_component.dart';
-import 'components/preview_tile.dart';
-import 'components/map_component.dart';
 import 'components/grid_component.dart';
+import 'components/map_component.dart';
+import 'components/preview_tile.dart';
+
+import 'data/building_definitions.dart';
 
 import 'systems/camera_system.dart';
 import 'systems/map_system.dart';
-
-import 'data/building_definitions.dart';
+import 'systems/terrain_mask.dart';
 
 class SettlementGame extends FlameGame
     with
@@ -27,9 +29,11 @@ class SettlementGame extends FlameGame
         ScrollDetector,
         ScaleCallbacks {
   final String token;
+
   final String settlementId;
 
   final Function(int x, int y)? onTileTap;
+
   final Function(Map data)? onBuildingTap;
 
   SettlementGame({
@@ -41,24 +45,28 @@ class SettlementGame extends FlameGame
 
   final buildingService = BuildingService();
 
-  int mapW = 60;
-  int mapH = 60;
+  int mapW = 30;
+  int mapH = 30;
 
-  double zoomLevel = 0.30;
+  double zoomLevel = 0.65;
 
   @override
   late final World world;
+
   late final CameraComponent cam;
 
-  late PreviewTile preview;
-  late BuildPreviewComponent buildPreview;
   late GridComponent grid;
+
+  late PreviewTile preview;
+
+  late BuildPreviewComponent buildPreview;
 
   String? selectedBuildType;
 
   List<Building> buildingsData = [];
 
   bool dragging = false;
+
   bool buildMode = false;
 
   BuildingVisualData get selectedDef {
@@ -73,18 +81,26 @@ class SettlementGame extends FlameGame
       );
     }
 
-    return BuildingDefinitions.get(selectedBuildType!);
+    return BuildingDefinitions.get(
+      selectedBuildType!,
+    );
   }
 
   @override
-  Color backgroundColor() => const Color(0xFF7AAE4E);
+  Color backgroundColor() {
+    return const Color(0xFF1B1B1B);
+  }
 
   @override
   Future<void> onLoad() async {
     world = World();
-    cam = CameraComponent(world: world);
+
+    cam = CameraComponent(
+      world: world,
+    );
 
     add(world);
+
     add(cam);
 
     final map = await MapSystem.load(
@@ -92,14 +108,13 @@ class SettlementGame extends FlameGame
       token: token,
     );
 
-    mapW = map["width"] ?? 60;
-    mapH = map["height"] ?? 60;
+    mapW = map["width"] ?? 30;
+    mapH = map["height"] ?? 30;
+
+    await TerrainMask.load();
 
     world.add(
-      MapComponent(
-        mapW: mapW,
-        mapH: mapH,
-      ),
+      MapComponent(),
     );
 
     grid = GridComponent(
@@ -110,41 +125,44 @@ class SettlementGame extends FlameGame
     world.add(grid);
 
     preview = PreviewTile()..visible = false;
+
     world.add(preview);
 
     buildPreview = BuildPreviewComponent();
+
     buildPreview.setOpacity(0);
+
     world.add(buildPreview);
 
     await refreshBuildings();
 
     CameraSystem.center(
       cam: cam,
-      mapW: mapW,
-      mapH: mapH,
-      tileW: GameConstants.tileW,
-      tileH: GameConstants.tileH,
       zoom: zoomLevel,
     );
-
-    cam.viewfinder.zoom = zoomLevel;
 
     toggleGrid(false);
   }
 
-  Future<void> setSelectedBuildType(String? type) async {
+  Future<void> setSelectedBuildType(
+    String? type,
+  ) async {
     selectedBuildType = type;
+
     buildMode = type != null;
 
     toggleGrid(buildMode);
 
     if (type == null) {
       preview.visible = false;
+
       buildPreview.setOpacity(0);
+
       return;
     }
 
     await buildPreview.setType(type);
+
     buildPreview.setOpacity(0.55);
   }
 
@@ -153,7 +171,7 @@ class SettlementGame extends FlameGame
 
     final existing = {
       for (var c in world.children.whereType<BuildingComponent>())
-        c.data["id"]: c
+        c.data["id"]: c,
     };
 
     buildingsData = newData;
@@ -163,14 +181,21 @@ class SettlementGame extends FlameGame
 
       if (existing.containsKey(id)) {
         existing[id]!.data.clear();
-        existing[id]!.data.addAll(b.toJson());
+
+        existing[id]!.data.addAll(
+              b.toJson(),
+            );
       } else {
         final pos = IsoUtils.tileToWorld(
           b.tileX,
           b.tileY,
         );
 
-        final def = BuildingDefinitions.get(b.type);
+        pos.y += GridComponent.gridOffsetY;
+
+        final def = BuildingDefinitions.get(
+          b.type,
+        );
 
         world.add(
           BuildingComponent(
@@ -200,22 +225,47 @@ class SettlementGame extends FlameGame
     int w,
     int h,
   ) {
+    for (int y = 0; y < h; y++) {
+      for (int x = 0; x < w; x++) {
+        final cx = tx + x;
+
+        final cy = ty + y;
+
+        final world = IsoUtils.tileToWorld(
+          cx,
+          cy,
+        );
+
+        if (!TerrainMask.canBuildAtPixel(
+          world.x.toInt(),
+          world.y.toInt(),
+        )) {
+          return true;
+        }
+      }
+    }
+
     for (final b in buildingsData) {
-      final bx = b.tileX;
-      final by = b.tileY;
+      final buildingDef = BuildingDefinitions.get(
+        b.type,
+      );
 
-      final def = BuildingDefinitions.get(b.type);
+      for (int y = 0; y < buildingDef.height; y++) {
+        for (int x = 0; x < buildingDef.width; x++) {
+          final bx = b.tileX + x;
 
-      for (int y = 0; y < h; y++) {
-        for (int x = 0; x < w; x++) {
-          final cx = tx + x;
-          final cy = ty + y;
+          final by = b.tileY + y;
 
-          if (cx >= bx &&
-              cx < bx + def.width &&
-              cy >= by &&
-              cy < by + def.height) {
-            return true;
+          for (int yy = 0; yy < h; yy++) {
+            for (int xx = 0; xx < w; xx++) {
+              final cx = tx + xx;
+
+              final cy = ty + yy;
+
+              if (cx == bx && cy == by) {
+                return true;
+              }
+            }
           }
         }
       }
@@ -224,10 +274,14 @@ class SettlementGame extends FlameGame
     return false;
   }
 
-  void _updatePreview(Vector2 screen) {
+  void _updatePreview(
+    Vector2 screen,
+  ) {
     if (!buildMode || selectedBuildType == null) {
       preview.visible = false;
+
       buildPreview.setOpacity(0);
+
       return;
     }
 
@@ -239,16 +293,22 @@ class SettlementGame extends FlameGame
         cam.viewfinder.position.y -
         size.y / (2 * zoomLevel);
 
-    final tile = IsoUtils.worldToTile(worldX, worldY);
+    final tile = IsoUtils.worldToTile(
+      worldX,
+      worldY - GridComponent.gridOffsetY,
+    );
 
     final def = selectedDef;
 
     final tx = tile.x.toInt() - (def.width ~/ 2);
+
     final ty = tile.y.toInt() - (def.height ~/ 2);
 
     if (tx < 0 || ty < 0 || tx + def.width > mapW || ty + def.height > mapH) {
       preview.visible = false;
+
       buildPreview.setOpacity(0);
+
       return;
     }
 
@@ -259,18 +319,28 @@ class SettlementGame extends FlameGame
       def.height,
     );
 
-    final pos = IsoUtils.tileToWorld(tx, ty);
+    final pos = IsoUtils.tileToWorld(
+      tx,
+      ty,
+    );
+
+    pos.y += GridComponent.gridOffsetY;
 
     preview.position = Vector2(
-  pos.x +
-      ((def.width - 1) * GameConstants.tileW / 2),
-  pos.y,
-);
+      pos.x + ((def.width - 1) * GameConstants.tileW / 2),
+      pos.y,
+    );
+
     preview.tileX = tx;
+
     preview.tileY = ty;
+
     preview.widthTiles = def.width;
+
     preview.heightTiles = def.height;
+
     preview.canBuild = !occupied;
+
     preview.visible = true;
 
     buildPreview.position = Vector2(
@@ -284,16 +354,24 @@ class SettlementGame extends FlameGame
   }
 
   @override
-  void onMouseMove(PointerHoverInfo info) {
+  void onMouseMove(
+    PointerHoverInfo info,
+  ) {
     if (!dragging) {
-      _updatePreview(info.eventPosition.global);
+      _updatePreview(
+        info.eventPosition.global,
+      );
     }
   }
 
   @override
-  void onTapDown(TapDownEvent event) {
+  void onTapDown(
+    TapDownEvent event,
+  ) {
     if (!buildMode) return;
+
     if (!preview.visible) return;
+
     if (!preview.canBuild) return;
 
     onTileTap?.call(
@@ -303,47 +381,69 @@ class SettlementGame extends FlameGame
   }
 
   @override
-  void onDragStart(DragStartEvent event) {
+  void onDragStart(
+    DragStartEvent event,
+  ) {
     super.onDragStart(event);
+
     dragging = true;
   }
 
   @override
-  void onDragUpdate(DragUpdateEvent event) {
+  void onDragUpdate(
+    DragUpdateEvent event,
+  ) {
     CameraSystem.drag(
-      cam,
-      event.localDelta,
-      zoomLevel,
+      cam: cam,
+      delta: event.localDelta,
+      zoom: zoomLevel,
     );
   }
 
   @override
-  void onDragEnd(DragEndEvent event) {
+  void onDragEnd(
+    DragEndEvent event,
+  ) {
     super.onDragEnd(event);
+
     dragging = false;
   }
 
   @override
-  void onScroll(PointerScrollInfo info) {
+  void onScroll(
+    PointerScrollInfo info,
+  ) {
     if (info.scrollDelta.global.y < 0) {
       zoomLevel += 0.05;
     } else {
       zoomLevel -= 0.05;
     }
 
-    zoomLevel = zoomLevel.clamp(0.15, 2.5);
+    zoomLevel = zoomLevel.clamp(
+      0.4,
+      1.5,
+    );
+
     cam.viewfinder.zoom = zoomLevel;
   }
 
   @override
-  void onScaleUpdate(ScaleUpdateEvent event) {
+  void onScaleUpdate(
+    ScaleUpdateEvent event,
+  ) {
     zoomLevel *= event.scale;
-    zoomLevel = zoomLevel.clamp(0.15, 2.5);
+
+    zoomLevel = zoomLevel.clamp(
+      0.4,
+      1.5,
+    );
 
     cam.viewfinder.zoom = zoomLevel;
   }
 
-  void toggleGrid(bool state) {
+  void toggleGrid(
+    bool state,
+  ) {
     buildMode = state;
 
     grid.visibleGrid = state;
@@ -351,9 +451,13 @@ class SettlementGame extends FlameGame
     preview.visible = state;
 
     if (!state) {
-      buildPreview.setOpacity(0);
+      buildPreview.setOpacity(
+        0,
+      );
     } else if (selectedBuildType != null) {
-      buildPreview.setOpacity(0.55);
+      buildPreview.setOpacity(
+        0.55,
+      );
     }
   }
 }

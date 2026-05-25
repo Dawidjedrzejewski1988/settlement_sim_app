@@ -237,18 +237,14 @@ class AvailableBuilding {
       producedResource: json['producedResource'] != null
           ? Resource.fromJson(json['producedResource'])
           : null,
-      productionPerHour:
-          (json['productionPerHour'] as num?)?.toDouble() ?? 0.0,
+      productionPerHour: (json['productionPerHour'] as num?)?.toDouble() ?? 0.0,
       buildCostMoney: (json['buildCostMoney'] as num?)?.toDouble() ?? 0.0,
-      maintenanceCost:
-          (json['maintenanceCost'] as num?)?.toDouble() ?? 0.0,
-      upgradeCostMoney:
-          (json['upgradeCostMoney'] as num?)?.toDouble() ?? 0.0,
+      maintenanceCost: (json['maintenanceCost'] as num?)?.toDouble() ?? 0.0,
+      upgradeCostMoney: (json['upgradeCostMoney'] as num?)?.toDouble() ?? 0.0,
       maxWorkers: json['maxWorkers'] ?? 0,
       storageCapacity: json['storageCapacity'] ?? 0,
       housing: json['housing'] ?? 0,
-      moraleBonus:
-          (json['moraleBonus'] as num?)?.toDouble() ?? 0.0,
+      moraleBonus: (json['moraleBonus'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }
@@ -310,8 +306,12 @@ class Building {
       status: json["status"] ?? "",
       maxWorkers: json["maxWorkers"] ?? 0,
       productionPerHour: (json["productionPerHour"] as num?)?.toDouble() ?? 0.0,
-      producedResource: json['producedResource'] != null ? Resource.fromJson(json['producedResource']) : null,
-      input: (json['input'] as List<dynamic>? ?? []).map((e) => Resource.fromJson(e)).toList(),
+      producedResource: json['producedResource'] != null
+          ? Resource.fromJson(json['producedResource'])
+          : null,
+      input: (json['input'] as List<dynamic>? ?? [])
+          .map((e) => Resource.fromJson(e))
+          .toList(),
       storageCapacity: json["storageCapacity"] ?? 0,
       housing: json["housing"] ?? 0,
       moraleBonus: (json["moraleBonus"] as num?)?.toDouble() ?? 0.0,
@@ -324,30 +324,30 @@ class Building {
       tileY: json["tileY"] ?? 0,
     );
   }
-  
+
   Map<String, dynamic> toJson() {
-  return {
-    "id": id,
-    "type": type,
-    "name": name,
-    "workers": workers,
-    "status": status,
-    "maxWorkers": maxWorkers,
-    "productionPerHour": productionPerHour,
-    "producedResource": producedResource?.toJson(),
-    "input": input.map((e) => e.toJson()).toList(),
-    "storageCapacity": storageCapacity,
-    "housing": housing,
-    "usedStorage": usedStorage,
-    "freeStorage": freeStorage,
-    "currentResidents": currentResidents,
-    "taxIncome": taxIncome,
-    "moraleBonus": moraleBonus,
-    "maintenanceCost": maintenanceCost,
-    "tileX": tileX,
-    "tileY": tileY,
-  };
-}
+    return {
+      "id": id,
+      "type": type,
+      "name": name,
+      "workers": workers,
+      "status": status,
+      "maxWorkers": maxWorkers,
+      "productionPerHour": productionPerHour,
+      "producedResource": producedResource?.toJson(),
+      "input": input.map((e) => e.toJson()).toList(),
+      "storageCapacity": storageCapacity,
+      "housing": housing,
+      "usedStorage": usedStorage,
+      "freeStorage": freeStorage,
+      "currentResidents": currentResidents,
+      "taxIncome": taxIncome,
+      "moraleBonus": moraleBonus,
+      "maintenanceCost": maintenanceCost,
+      "tileX": tileX,
+      "tileY": tileY,
+    };
+  }
 }
 
 class Session {
@@ -471,7 +471,8 @@ class Settlement {
         money: (json["money"] as num?)?.toDouble() ?? 0,
         lastNetIncome: (json["lastNetIncome"] as num?)?.toDouble() ?? 0,
         lastTaxPerPerson: (json["lastTaxPerPerson"] as num?)?.toDouble() ?? 0,
-        moraleChangePerHour: (json["moraleChangePerHour"] as num?)?.toDouble() ?? 0,
+        moraleChangePerHour:
+            (json["moraleChangePerHour"] as num?)?.toDouble() ?? 0,
         moraleBreakdown: (json["moraleBreakdown"] as List<dynamic>? ?? [])
             .map((e) => e.toString())
             .toList(),
@@ -481,9 +482,11 @@ class Settlement {
         activeTaxPolicy: json["activeTaxPolicy"]?.toString(),
         activeFoodPolicy: json["activeFoodPolicy"]?.toString(),
         activeWorkPolicy: json["activeWorkPolicy"]?.toString(),
-        foodConsumptionPerHour: (json["foodConsumptionPerHour"] as num?) ?.toDouble() ?? 0,
-        woodConsumptionPerHour: (json["woodConsumptionPerHour"] as num?) ?.toDouble() ?? 0,
-        foodSatisfaction: (json["foodSatisfaction"] as num?) ?.toDouble() ?? 0,
+        foodConsumptionPerHour:
+            (json["foodConsumptionPerHour"] as num?)?.toDouble() ?? 0,
+        woodConsumptionPerHour:
+            (json["woodConsumptionPerHour"] as num?)?.toDouble() ?? 0,
+        foodSatisfaction: (json["foodSatisfaction"] as num?)?.toDouble() ?? 0,
         hasWoodShortage: json["hasWoodShortage"] ?? false,
         showWelcome: json["showWelcome"] ?? false,
       );
@@ -780,8 +783,7 @@ class QuestResponse {
     required this.completed,
   });
 
-  factory QuestResponse.fromJson(Map<String, dynamic> json) =>
-      QuestResponse(
+  factory QuestResponse.fromJson(Map<String, dynamic> json) => QuestResponse(
         active: (json["active"] as List<dynamic>? ?? [])
             .map((e) => Quest.fromJson(e))
             .toList(),
@@ -810,8 +812,7 @@ class RankingEntry {
     required this.score,
   });
 
-  factory RankingEntry.fromJson(Map<String, dynamic> json) =>
-      RankingEntry(
+  factory RankingEntry.fromJson(Map<String, dynamic> json) => RankingEntry(
         settlementId: json["settlementId"]?.toString() ?? "",
         username: json["username"]?.toString() ?? "",
         population: json["population"] ?? 0,

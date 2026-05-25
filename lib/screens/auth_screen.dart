@@ -95,13 +95,11 @@ class _AuthScreenState extends State<AuthScreen> {
               fit: BoxFit.cover,
             ),
           ),
-
           Positioned.fill(
             child: Container(
               color: Colors.black.withValues(alpha: 0.55),
             ),
           ),
-
           Center(
             child: Container(
               width: 420,
@@ -118,9 +116,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     "assets/logo/logo.png",
                     width: 180,
                   ),
-
                   const SizedBox(height: 25),
-
                   Text(
                     isLogin ? "Logowanie" : "Rejestracja",
                     style: const TextStyle(
@@ -129,26 +125,21 @@ class _AuthScreenState extends State<AuthScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   const SizedBox(height: 25),
-
                   if (!isLogin)
                     field(
                       controller: usernameController,
                       text: "Nazwa gracza",
                     ),
-
                   field(
                     controller: emailController,
                     text: "Email",
                   ),
-
                   field(
                     controller: passwordController,
                     text: "Hasło",
                     password: true,
                   ),
-
                   if (message.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 15),
@@ -162,7 +153,6 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                       ),
                     ),
-
                   SizedBox(
                     width: double.infinity,
                     height: 55,
@@ -187,9 +177,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             ),
                     ),
                   ),
-
                   const SizedBox(height: 15),
-
                   TextButton(
                     onPressed: () {
                       setState(() {

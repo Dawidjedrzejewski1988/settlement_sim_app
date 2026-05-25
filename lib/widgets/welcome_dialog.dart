@@ -31,17 +31,13 @@ class WelcomeDialog extends StatelessWidget {
               "Witaj w Settlement Sim!",
               style: UiText.title(size: 34),
             ),
-
             const SizedBox(height: 18),
-
             Text(
               "Twoim zadaniem jest rozwój własnej osady i przekształcenie jej w potężne oraz dobrze prosperujące miasto.\n\nBuduj nowe budynki produkcyjne i mieszkalne, zarządzaj ekonomią, handlem oraz poziomem morale mieszkańców.\n\nRozwijaj technologie i specjalizacje przemysłowe, aby zwiększać wydajność osady i odblokowywać nowe bonusy.\n\nNa rynku możesz kupować oraz sprzedawać surowce zależnie od aktualnych cen i sytuacji gospodarczej.\n\nSystem polityki pozwala decydować o podatkach, pracy mieszkańców oraz dystrybucji żywności, co wpływa na morale i rozwój populacji.\n\nW trakcie gry będą pojawiały się losowe wydarzenia takie jak pożary, susze czy festiwale, które mogą pomóc lub zaszkodzić osadzie.\n\nWykonuj zadania, rozwijaj populację i wspinaj się w rankingu najlepszych osad.",
               textAlign: TextAlign.center,
               style: UiText.body(size: 18),
             ),
-
             const SizedBox(height: 26),
-
             SizedBox(
               width: 220,
               child: UiButton(

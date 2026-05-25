@@ -1,59 +1,31 @@
-import 'dart:ui';
 import 'package:flame/components.dart';
 
-import '../constants/game_constants.dart';
-import '../utils/iso_utils.dart';
+class MapComponent extends SpriteComponent {
+  static const double mapWidth = 4000;
 
-class MapComponent extends PositionComponent {
-  final int mapW;
-  final int mapH;
+  static const double mapHeight = 2667;
 
-  Picture? _picture;
+  static final Vector2 mapOffset = Vector2(
+    2000,
+    1333,
+  );
 
-  MapComponent({
-    required this.mapW,
-    required this.mapH,
-  });
+  MapComponent()
+      : super(
+          anchor: Anchor.center,
+        );
 
   @override
   Future<void> onLoad() async {
-    final recorder = PictureRecorder();
-    final canvas = Canvas(recorder);
+    sprite = await Sprite.load(
+      'world/world.png',
+    );
 
-    final fill = Paint()
-      ..color = const Color(0xFF7AAE4E);
+    size = Vector2(
+      mapWidth,
+      mapHeight,
+    );
 
-    for (int y = 0; y < mapH; y++) {
-      for (int x = 0; x < mapW; x++) {
-        final pos = IsoUtils.tileToWorld(x, y);
-
-        final path = Path()
-          ..moveTo(pos.x, pos.y)
-          ..lineTo(
-            pos.x + GameConstants.tileW / 2,
-            pos.y + GameConstants.tileH / 2,
-          )
-          ..lineTo(
-            pos.x,
-            pos.y + GameConstants.tileH,
-          )
-          ..lineTo(
-            pos.x - GameConstants.tileW / 2,
-            pos.y + GameConstants.tileH / 2,
-          )
-          ..close();
-
-        canvas.drawPath(path, fill);
-      }
-    }
-
-    _picture = recorder.endRecording();
-  }
-
-  @override
-  void render(Canvas canvas) {
-    if (_picture != null) {
-      canvas.drawPicture(_picture!);
-    }
+    position = mapOffset;
   }
 }

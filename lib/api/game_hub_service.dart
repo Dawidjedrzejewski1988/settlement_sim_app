@@ -7,8 +7,7 @@ class GameHubService {
   HubConnection? _connection;
 
   bool get isConnected =>
-      _connection != null &&
-      _connection!.state == HubConnectionState.Connected;
+      _connection != null && _connection!.state == HubConnectionState.Connected;
 
   Future<void> connect() async {
     if (isConnected) return;

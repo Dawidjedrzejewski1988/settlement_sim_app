@@ -61,8 +61,7 @@ class _BuildingSidePanelState extends State<BuildingSidePanel> {
   }
 
   bool isHousingBuilding() {
-    return widget.building.type == "House" ||
-        widget.building.type == "Cottage";
+    return widget.building.type == "House" || widget.building.type == "Cottage";
   }
 
   bool isWarehouse() {
@@ -216,14 +215,11 @@ class _BuildingSidePanelState extends State<BuildingSidePanel> {
       return const SizedBox();
     }
 
-    final value = (1 - (widget.timer / 60))
-        .clamp(0, 1)
-        .toDouble();
+    final value = (1 - (widget.timer / 60)).clamp(0, 1).toDouble();
 
     return Column(
       children: [
         const SizedBox(height: 12),
-
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: LinearProgressIndicator(
@@ -235,9 +231,7 @@ class _BuildingSidePanelState extends State<BuildingSidePanel> {
             ),
           ),
         ),
-
         const SizedBox(height: 6),
-
         Text(
           "${widget.timer}s",
           style: UiText.body(),
@@ -284,9 +278,7 @@ class _BuildingSidePanelState extends State<BuildingSidePanel> {
                 "👷 Robotnicy",
                 style: UiText.title(size: 18),
               ),
-
               const Spacer(),
-
               Text(
                 "$workers / ${widget.building.maxWorkers}",
                 style: UiText.value(
@@ -295,9 +287,7 @@ class _BuildingSidePanelState extends State<BuildingSidePanel> {
               ),
             ],
           ),
-
           const SizedBox(height: 10),
-
           Row(
             children: [
               Expanded(
@@ -320,20 +310,16 @@ class _BuildingSidePanelState extends State<BuildingSidePanel> {
                   ),
                 ),
               ),
-
               const SizedBox(width: 12),
-
               Expanded(
                 child: SizedBox(
                   height: 30,
                   child: UiButton(
                     text: "+",
-                    color: busy() ||
-                            workers >= widget.building.maxWorkers
+                    color: busy() || workers >= widget.building.maxWorkers
                         ? Colors.grey.withValues(alpha: 0.25)
                         : UiColors.green,
-                    onTap: busy() ||
-                            workers >= widget.building.maxWorkers
+                    onTap: busy() || workers >= widget.building.maxWorkers
                         ? null
                         : () {
                             setState(() {
@@ -357,7 +343,10 @@ class _BuildingSidePanelState extends State<BuildingSidePanel> {
       return const SizedBox();
     }
 
-    final currentProduction = widget.building.maxWorkers == 0 ? 0.0 : widget.building.productionPerHour * (widget.building.workers / widget.building.maxWorkers);
+    final currentProduction = widget.building.maxWorkers == 0
+        ? 0.0
+        : widget.building.productionPerHour *
+            (widget.building.workers / widget.building.maxWorkers);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -367,29 +356,24 @@ class _BuildingSidePanelState extends State<BuildingSidePanel> {
           "${widget.building.productionPerHour.toStringAsFixed(0)}/h",
           color: Colors.greenAccent,
         ),
-
         rowStat(
           "⏱ Aktualnie",
-          "${currentProduction.toStringAsFixed(0)}/h", color: Colors.lightGreenAccent,
+          "${currentProduction.toStringAsFixed(0)}/h",
+          color: Colors.lightGreenAccent,
         ),
-
         if (widget.building.producedResource != null)
           rowStat(
             "📦 Produkuje",
             widget.building.producedResource!.name ?? "-",
             color: Colors.greenAccent,
           ),
-
         if (widget.building.input.isNotEmpty) ...[
           const SizedBox(height: 6),
-
           Text(
             "Wymagane surowce",
             style: UiText.title(size: 18),
           ),
-
           const SizedBox(height: 10),
-
           ...widget.building.input.map(
             (e) => rowStat(
               "📥 ${e.name}",
@@ -402,50 +386,43 @@ class _BuildingSidePanelState extends State<BuildingSidePanel> {
     );
   }
 
-Widget warehouseSection() {
-  if (!isWarehouse()) {
-    return const SizedBox();
-  }
+  Widget warehouseSection() {
+    if (!isWarehouse()) {
+      return const SizedBox();
+    }
 
-  final used = widget.building.usedStorage;
-  final max = widget.building.storageCapacity;
-  final percent = max <= 0 ? 0.0 : ((used / max).clamp(0.0, 1.0)).toDouble();
+    final used = widget.building.usedStorage;
+    final max = widget.building.storageCapacity;
+    final percent = max <= 0 ? 0.0 : ((used / max).clamp(0.0, 1.0)).toDouble();
 
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      rowStat(
-        "📦 Magazyn",
-        "${used.toStringAsFixed(0)} / ${max.toStringAsFixed(0)}",
-        color: Colors.orangeAccent,
-      ),
-
-      const SizedBox(height: 8),
-
-      ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: LinearProgressIndicator(
-          value: percent,
-          minHeight: 14,
-          backgroundColor: Colors.black38,
-          valueColor: AlwaysStoppedAnimation(
-            percent > 0.9
-                ? Colors.redAccent
-                : Colors.orangeAccent,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        rowStat(
+          "📦 Magazyn",
+          "${used.toStringAsFixed(0)} / ${max.toStringAsFixed(0)}",
+          color: Colors.orangeAccent,
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: LinearProgressIndicator(
+            value: percent,
+            minHeight: 14,
+            backgroundColor: Colors.black38,
+            valueColor: AlwaysStoppedAnimation(
+              percent > 0.9 ? Colors.redAccent : Colors.orangeAccent,
+            ),
           ),
         ),
-      ),
-
-      const SizedBox(height: 10),
-
-      rowStat(
-        "📥 Wolne miejsce",
-        widget.building.freeStorage
-            .toStringAsFixed(0),
-      ),
-    ],
-  );
-}
+        const SizedBox(height: 10),
+        rowStat(
+          "📥 Wolne miejsce",
+          widget.building.freeStorage.toStringAsFixed(0),
+        ),
+      ],
+    );
+  }
 
   Widget housingSection() {
     if (!isHousingBuilding()) {
@@ -458,7 +435,6 @@ Widget warehouseSection() {
           "👥 Mieszkańcy",
           "${widget.building.currentResidents} / ${widget.building.housing}",
         ),
-
         rowStat(
           "💰 Podatki",
           "+${widget.building.taxIncome.toStringAsFixed(0)}/h",
@@ -481,16 +457,12 @@ Widget warehouseSection() {
           "+${widget.building.moraleBonus}",
           color: Colors.greenAccent,
         ),
-
         const SizedBox(height: 10),
-
         Text(
           "Efekty",
           style: UiText.title(size: 18),
         ),
-
         const SizedBox(height: 10),
-
         rowStat("🍺 Rozrywka", "+2 morale"),
         rowStat("🎵 Muzyka", "+1 morale"),
         rowStat("😊 Komfort", "+1 morale"),
@@ -529,126 +501,109 @@ Widget warehouseSection() {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: 10,
-      right: 10,
-      bottom: null,
-      child: SizedBox(
-        width: 420,
-        child: Container(
-          constraints: const BoxConstraints(
-            maxHeight: 760,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(26),
-            border: Border.all(
-              color: UiColors.gold,
-              width: 2,
+        top: 10,
+        right: 10,
+        bottom: null,
+        child: SizedBox(
+          width: 420,
+          child: Container(
+            constraints: const BoxConstraints(
+              maxHeight: 760,
             ),
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF6A3813),
-                Color(0xFF3B1C08),
-                Color(0xFF1F0D04),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(
+                color: UiColors.gold,
+                width: 2,
+              ),
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF6A3813),
+                  Color(0xFF3B1C08),
+                  Color(0xFF1F0D04),
+                ],
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black54,
+                  blurRadius: 18,
+                  offset: Offset(-6, 0),
+                ),
               ],
             ),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black54,
-                blurRadius: 18,
-                offset: Offset(-6, 0),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: SingleChildScrollView(
-              child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                Row(
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        "${icon()} ${buildingName(widget.building.type)}",
-                        style: UiText.title(size: 30),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "${icon()} ${buildingName(widget.building.type)}",
+                            style: UiText.title(size: 30),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: widget.onClose,
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      statusName(widget.building.status),
+                      style: UiText.body(
+                        color:
+                            busy() ? Colors.orangeAccent : Colors.greenAccent,
                       ),
                     ),
-
-                    IconButton(
-                      onPressed: widget.onClose,
-                      icon: const Icon(
-                        Icons.close,
-                        color: Colors.white,
+                    progressBar(),
+                    const SizedBox(height: 18),
+                    Container(
+                      height: 120,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(
+                          alpha: 0.18,
+                        ),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: Colors.white12,
+                        ),
                       ),
+                      child: Center(
+                        child: Text(
+                          icon(),
+                          style: const TextStyle(
+                            fontSize: 56,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    commonSection(),
+                    const SizedBox(height: 10),
+                    buildSpecificSection(),
+                    const SizedBox(height: 16),
+                    workersSection(),
+                    const SizedBox(height: 10),
+                    actionButton(
+                      text: "Zburz budynek",
+                      icon: Icons.delete_forever,
+                      color: UiColors.red,
+                      onTap: widget.onDelete,
                     ),
                   ],
                 ),
-
-                Text(
-                  statusName(widget.building.status),
-                  style: UiText.body(
-                    color: busy()
-                        ? Colors.orangeAccent
-                        : Colors.greenAccent,
-                  ),
-                ),
-
-                progressBar(),
-
-                const SizedBox(height: 18),
-
-                Container(
-                  height: 120,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(
-                      alpha: 0.18,
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(18),
-                    border: Border.all(
-                      color: Colors.white12,
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      icon(),
-                      style: const TextStyle(
-                        fontSize: 56,
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                commonSection(),
-
-                const SizedBox(height: 10),
-
-                buildSpecificSection(),
-
-                const SizedBox(height: 16),
-
-                workersSection(),
-
-                const SizedBox(height: 10),
-
-                actionButton(
-                  text: "Zburz budynek",
-                  icon: Icons.delete_forever,
-                  color: UiColors.red,
-                  onTap: widget.onDelete,
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    )
-    );
+        ));
   }
 }

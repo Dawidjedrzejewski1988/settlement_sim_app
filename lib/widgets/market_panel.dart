@@ -25,17 +25,13 @@ class MarketPanel extends StatefulWidget {
   });
 
   @override
-  State<MarketPanel> createState() =>
-      _MarketPanelState();
+  State<MarketPanel> createState() => _MarketPanelState();
 }
 
-class _MarketPanelState
-    extends State<MarketPanel> {
-
+class _MarketPanelState extends State<MarketPanel> {
   bool showHistory = false;
 
-  final Map<String, TextEditingController>
-      controllers = {};
+  final Map<String, TextEditingController> controllers = {};
 
   @override
   void dispose() {
@@ -50,8 +46,7 @@ class _MarketPanelState
     String type,
   ) {
     if (!controllers.containsKey(type)) {
-      controllers[type] =
-          TextEditingController(text: "10");
+      controllers[type] = TextEditingController(text: "10");
     }
 
     return controllers[type]!;
@@ -127,14 +122,11 @@ class _MarketPanelState
         height: 760,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          borderRadius:
-              BorderRadius.circular(28),
-
+          borderRadius: BorderRadius.circular(28),
           border: Border.all(
             color: UiColors.gold,
             width: 2,
           ),
-
           gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -144,7 +136,6 @@ class _MarketPanelState
               Color(0xFF1B0B03),
             ],
           ),
-
           boxShadow: const [
             BoxShadow(
               color: Colors.black54,
@@ -153,22 +144,17 @@ class _MarketPanelState
             ),
           ],
         ),
-
         child: Column(
           children: [
-
             /// HEADER
             Row(
               children: [
-
                 Expanded(
                   child: Text(
                     "Rynek Osady",
-                    style:
-                        UiText.title(size: 34),
+                    style: UiText.title(size: 34),
                   ),
                 ),
-
                 IconButton(
                   onPressed: widget.onClose,
                   icon: const Icon(
@@ -185,23 +171,17 @@ class _MarketPanelState
             /// TABS
             Container(
               padding: const EdgeInsets.all(6),
-
               decoration: BoxDecoration(
                 color: Colors.black.withValues(
                   alpha: 0.18,
                 ),
-
-                borderRadius:
-                    BorderRadius.circular(20),
-
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: Colors.white10,
                 ),
               ),
-
               child: Row(
                 children: [
-
                   Expanded(
                     child: tabButton(
                       text: "Rynek",
@@ -213,9 +193,7 @@ class _MarketPanelState
                       },
                     ),
                   ),
-
                   const SizedBox(width: 8),
-
                   Expanded(
                     child: tabButton(
                       text: "Historia",
@@ -262,24 +240,14 @@ class _MarketPanelState
   }) {
     return GestureDetector(
       onTap: onTap,
-
       child: AnimatedContainer(
-        duration:
-            const Duration(milliseconds: 180),
-
+        duration: const Duration(milliseconds: 180),
         height: 56,
-
         alignment: Alignment.center,
-
         decoration: BoxDecoration(
-          color: active
-              ? UiColors.gold
-              : Colors.transparent,
-
-          borderRadius:
-              BorderRadius.circular(16),
+          color: active ? UiColors.gold : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
         ),
-
         child: Text(
           text,
           style: UiText.title(size: 20),
@@ -292,24 +260,18 @@ class _MarketPanelState
     return Container(
       width: 54,
       height: 54,
-
       padding: const EdgeInsets.all(8),
-
       decoration: BoxDecoration(
         color: Colors.black.withValues(
           alpha: 0.24,
         ),
-
-        borderRadius:
-            BorderRadius.circular(16),
-
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Colors.white.withValues(
             alpha: 0.05,
           ),
         ),
       ),
-
       child: Image.asset(
         iconPath(type),
         fit: BoxFit.contain,
@@ -332,41 +294,29 @@ class _MarketPanelState
 
     return ListView.separated(
       itemCount: resources.length,
-
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 10),
-
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (_, i) {
         final r = resources[i];
 
-        final quantityController =
-            controller(r.resourceType);
+        final quantityController = controller(r.resourceType);
 
         return Container(
           height: 92,
-
-          padding:
-              const EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 10,
           ),
-
           decoration: BoxDecoration(
             color: Colors.black.withValues(
               alpha: 0.14,
             ),
-
-            borderRadius:
-                BorderRadius.circular(20),
-
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: Colors.white10,
             ),
           ),
-
           child: Row(
             children: [
-
               resourceIcon(r.resourceType),
 
               const SizedBox(width: 14),
@@ -374,51 +324,36 @@ class _MarketPanelState
               /// INFO
               Expanded(
                 child: Column(
-                  mainAxisAlignment:
-                      MainAxisAlignment.center,
-
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
-
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     Text(
                       name(r.resourceType),
-                      style:
-                          UiText.title(size: 18),
+                      style: UiText.title(size: 18),
                     ),
-
                     const SizedBox(height: 4),
-
                     Row(
                       children: [
-
                         Text(
                           "Dostępne: ${r.quantity.toStringAsFixed(0)}",
                           style: UiText.body(
                             size: 13,
                           ),
                         ),
-
                         const SizedBox(width: 18),
-
                         Text(
                           "Kup: ${r.buyPrice.toStringAsFixed(0)} zł",
                           style: UiText.value(
                             size: 13,
-                            color:
-                                Colors.greenAccent,
+                            color: Colors.greenAccent,
                           ),
                         ),
-
                         const SizedBox(width: 12),
-
                         Text(
                           "Sprzedaj: ${r.sellPrice.toStringAsFixed(0)} zł",
                           style: UiText.value(
                             size: 13,
-                            color:
-                                UiColors.gold,
+                            color: UiColors.gold,
                           ),
                         ),
                       ],
@@ -430,102 +365,61 @@ class _MarketPanelState
               /// ACTIONS
               SizedBox(
                 width: 360,
-
                 child: Row(
                   children: [
-
                     SizedBox(
                       width: 74,
                       height: 42,
-
                       child: TextField(
-                        controller:
-                            quantityController,
-
-                        keyboardType:
-                            TextInputType.number,
-
-                        textAlign:
-                            TextAlign.center,
-
+                        controller: quantityController,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,
                         ),
-
-                        decoration:
-                            InputDecoration(
-                          contentPadding:
-                              EdgeInsets.zero,
-
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.zero,
                           filled: true,
-
-                          fillColor:
-                              Colors.black26,
-
-                          border:
-                              OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius
-                                    .circular(
-                                        12),
+                          fillColor: Colors.black26,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                       ),
                     ),
-
                     const SizedBox(width: 10),
-
                     SizedBox(
                       width: 118,
                       height: 42,
-
                       child: UiButton(
                         text: "Kup",
-                        icon:
-                            Icons.shopping_cart,
-
-                        color:
-                            UiColors.green,
-
-                        onTap: () =>
-                            widget.onTrade(
+                        icon: Icons.shopping_cart,
+                        color: UiColors.green,
+                        onTap: () => widget.onTrade(
                           r.resourceType,
-
                           double.tryParse(
-                                quantityController
-                                    .text,
+                                quantityController.text,
                               ) ??
                               1,
-
                           true,
                         ),
                       ),
                     ),
-
                     const SizedBox(width: 10),
-
                     SizedBox(
                       width: 132,
                       height: 42,
-
                       child: UiButton(
                         text: "Sprzedaj",
                         icon: Icons.sell,
-
-                        color:
-                            UiColors.gold,
-
-                        onTap: () =>
-                            widget.onTrade(
+                        color: UiColors.gold,
+                        onTap: () => widget.onTrade(
                           r.resourceType,
-
                           double.tryParse(
-                                quantityController
-                                    .text,
+                                quantityController.text,
                               ) ??
                               1,
-
                           false,
                         ),
                       ),
@@ -552,66 +446,44 @@ class _MarketPanelState
 
     return ListView.separated(
       itemCount: widget.history.length,
-
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 10),
-
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (_, i) {
         final h = widget.history[i];
 
         return Container(
           padding: const EdgeInsets.all(14),
-
           decoration: BoxDecoration(
             color: Colors.black.withValues(
               alpha: 0.14,
             ),
-
-            borderRadius:
-                BorderRadius.circular(18),
-
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: Colors.white10,
             ),
           ),
-
           child: Row(
             children: [
-
               resourceIcon(h.resourceType),
-
               const SizedBox(width: 14),
-
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
-
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     Text(
                       name(h.resourceType),
-                      style:
-                          UiText.title(size: 18),
+                      style: UiText.title(size: 18),
                     ),
-
                     const SizedBox(height: 4),
-
                     Text(
                       "${h.quantity.toInt()} szt. • ${h.pricePerUnit.toStringAsFixed(0)} zł/szt.",
-                      style:
-                          UiText.body(size: 13),
+                      style: UiText.body(size: 13),
                     ),
                   ],
                 ),
               ),
-
               Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.end,
-
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-
                   Text(
                     "${h.totalPrice.toStringAsFixed(0)} zł",
                     style: UiText.value(
@@ -619,13 +491,10 @@ class _MarketPanelState
                       color: UiColors.gold,
                     ),
                   ),
-
                   const SizedBox(height: 4),
-
                   Text(
                     "Prowizja ${h.commission.toStringAsFixed(0)} zł",
-                    style:
-                        UiText.body(size: 12),
+                    style: UiText.body(size: 12),
                   ),
                 ],
               ),

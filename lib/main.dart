@@ -15,7 +15,7 @@ class SettlementSimApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Settlement Sim',
+      title: 'SettlementSim',
       theme: ThemeData.dark(),
       home: const AuthScreen(),
     );

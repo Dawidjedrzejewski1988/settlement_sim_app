@@ -22,8 +22,7 @@ class QuestPanel extends StatelessWidget {
         height: 720,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          borderRadius:
-              BorderRadius.circular(26),
+          borderRadius: BorderRadius.circular(26),
           border: Border.all(
             color: UiColors.gold,
             width: 2,
@@ -39,8 +38,7 @@ class QuestPanel extends StatelessWidget {
           ),
         ),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -52,7 +50,6 @@ class QuestPanel extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 IconButton(
                   onPressed: onClose,
                   icon: const Icon(
@@ -62,49 +59,38 @@ class QuestPanel extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 24),
-
             Text(
               "Aktywne zadania",
               style: UiText.title(
                 size: 24,
               ),
             ),
-
             const SizedBox(height: 14),
-
             Expanded(
               child: ListView(
                 children: [
                   ...quests.active.map(
-                    (quest) =>
-                        buildQuestCard(
+                    (quest) => buildQuestCard(
                       quest,
                       false,
                     ),
                   ),
-
-                  if (quests.completed
-                      .isNotEmpty) ...[
+                  if (quests.completed.isNotEmpty) ...[
                     const SizedBox(
                       height: 26,
                     ),
-
                     Text(
                       "Ukończone",
                       style: UiText.title(
                         size: 24,
                       ),
                     ),
-
                     const SizedBox(
                       height: 14,
                     ),
-
                     ...quests.completed.map(
-                      (quest) =>
-                          buildQuestCard(
+                      (quest) => buildQuestCard(
                         quest,
                         true,
                       ),
@@ -136,12 +122,9 @@ class QuestPanel extends StatelessWidget {
             : Colors.black.withValues(
                 alpha: 0.22,
               ),
-        borderRadius:
-            BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: completed
-              ? Colors.green
-              : Colors.white10,
+          color: completed ? Colors.green : Colors.white10,
         ),
       ),
       child: Row(
@@ -151,36 +134,26 @@ class QuestPanel extends StatelessWidget {
             height: 58,
             decoration: BoxDecoration(
               color: completed
-                  ? Colors.green
-                      .withValues(
+                  ? Colors.green.withValues(
                       alpha: 0.18,
                     )
-                  : UiColors.gold
-                      .withValues(
+                  : UiColors.gold.withValues(
                       alpha: 0.18,
                     ),
-              borderRadius:
-                  BorderRadius.circular(
+              borderRadius: BorderRadius.circular(
                 16,
               ),
             ),
             child: Icon(
-              completed
-                  ? Icons.check
-                  : Icons.flag,
-              color: completed
-                  ? Colors.green
-                  : UiColors.gold,
+              completed ? Icons.check : Icons.flag,
+              color: completed ? Colors.green : UiColors.gold,
               size: 30,
             ),
           ),
-
           const SizedBox(width: 18),
-
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   quest.description,
@@ -188,13 +161,9 @@ class QuestPanel extends StatelessWidget {
                     size: 20,
                   ),
                 ),
-
                 const SizedBox(height: 8),
-
                 Text(
-                  completed
-                      ? "Ukończone"
-                      : "Etap ${quest.stage + 1}",
+                  completed ? "Ukończone" : "Etap ${quest.stage + 1}",
                   style: UiText.body(),
                 ),
               ],

@@ -23,24 +23,33 @@ class PreviewTile extends PositionComponent {
   void render(Canvas canvas) {
     if (!visible) return;
 
-    final fillColor =
-        canBuild
-            ? const Color(0x6632D74B)
-            : const Color(0x66FF3B30);
+    final fillPaint = Paint()
+      ..color = canBuild
+          ? const Color(
+              0x3322C55E,
+            )
+          : const Color(
+              0x44EF4444,
+            )
+      ..style = PaintingStyle.fill;
 
-    final borderColor =
-        canBuild
-            ? const Color(0xFF00E5FF)
-            : const Color(0xFFFF453A);
+    final borderPaint = Paint()
+      ..color = canBuild
+          ? const Color(
+              0x8822C55E,
+            )
+          : const Color(
+              0x99EF4444,
+            )
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
 
     for (int y = 0; y < heightTiles; y++) {
       for (int x = 0; x < widthTiles; x++) {
         final dx =
-            (x - y) * (GameConstants.tileW / 2)
-            + GameConstants.tileW / 2;
+            (x - y) * (GameConstants.tileW / 2) + GameConstants.tileW / 2;
 
-        final dy =
-            (x + y) * (GameConstants.tileH / 2);
+        final dy = (x + y) * (GameConstants.tileH / 2);
 
         final path = Path()
           ..moveTo(
@@ -63,17 +72,12 @@ class PreviewTile extends PositionComponent {
 
         canvas.drawPath(
           path,
-          Paint()
-            ..color = fillColor
-            ..style = PaintingStyle.fill,
+          fillPaint,
         );
 
         canvas.drawPath(
           path,
-          Paint()
-            ..color = borderColor
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2,
+          borderPaint,
         );
       }
     }

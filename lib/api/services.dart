@@ -4,24 +4,24 @@ import './models.dart';
 class AuthService {
   final api = ApiClient();
 
-  Future<void> login(String email,String password) async {
-    final res = await api.dio.post("/api/auth/login",data:{
-      "email":email,
-      "password":password,
+  Future<void> login(String email, String password) async {
+    final res = await api.dio.post("/api/auth/login", data: {
+      "email": email,
+      "password": password,
     });
 
     final token = res.data["accessToken"];
 
-    if(token != null){
-      await api.storage.write(key:"token",value:token);
+    if (token != null) {
+      await api.storage.write(key: "token", value: token);
     }
   }
 
-  Future<void> register(String username, String email,String password) async {
-    await api.dio.post("/api/auth/register",data:{
-      "username":username,
-      "email":email,
-      "password":password,
+  Future<void> register(String username, String email, String password) async {
+    await api.dio.post("/api/auth/register", data: {
+      "username": username,
+      "email": email,
+      "password": password,
     });
   }
 }
@@ -31,12 +31,14 @@ class BuildingService {
 
   Future<List<Building>> getBuildings() async {
     final res = await dio.get("/api/buildings");
-    return (res.data as List).map((e)=>Building.fromJson(e)).toList();
+    return (res.data as List).map((e) => Building.fromJson(e)).toList();
   }
 
   Future<List<AvailableBuilding>> getAvailableBuildings() async {
     final res = await dio.get("/api/buildings/available");
-    return (res.data as List).map((e)=>AvailableBuilding.fromJson(e)).toList();
+    return (res.data as List)
+        .map((e) => AvailableBuilding.fromJson(e))
+        .toList();
   }
 
   Future<void> buildBuilding({
@@ -44,10 +46,10 @@ class BuildingService {
     required int tileX,
     required int tileY,
   }) async {
-    await dio.post("/api/buildings",data:{
-      "type":type,
-      "tileX":tileX,
-      "tileY":tileY,
+    await dio.post("/api/buildings", data: {
+      "type": type,
+      "tileX": tileX,
+      "tileY": tileY,
     });
   }
 
@@ -55,7 +57,7 @@ class BuildingService {
     required String buildingId,
     required int workers,
   }) async {
-    await dio.patch("/api/buildings/$buildingId/workers",data:workers);
+    await dio.patch("/api/buildings/$buildingId/workers", data: workers);
   }
 
   Future<void> upgrade(String buildingId) async {
@@ -72,7 +74,7 @@ class EventService {
 
   Future<List<Event>> getEvents() async {
     final res = await dio.get("/api/events");
-    return (res.data as List).map((e)=>Event.fromJson(e)).toList();
+    return (res.data as List).map((e) => Event.fromJson(e)).toList();
   }
 }
 
@@ -81,7 +83,7 @@ class IndustryService {
 
   Future<List<Industry>> getIndustries() async {
     final res = await dio.get("/api/industries");
-    return (res.data as List).map((e)=>Industry.fromJson(e)).toList();
+    return (res.data as List).map((e) => Industry.fromJson(e)).toList();
   }
 }
 
@@ -99,16 +101,16 @@ class MarketService {
 
   Future<List<MarketResource>> getResources() async {
     final res = await dio.get("/api/market/resources");
-    return (res.data as List).map((e)=>MarketResource.fromJson(e)).toList();
+    return (res.data as List).map((e) => MarketResource.fromJson(e)).toList();
   }
 
   Future<void> buy({
     required String resourceType,
     required double quantity,
   }) async {
-    await dio.post("/api/market/buy",data:{
-      "resourceType":resourceType,
-      "quantity":quantity,
+    await dio.post("/api/market/buy", data: {
+      "resourceType": resourceType,
+      "quantity": quantity,
     });
   }
 
@@ -116,20 +118,22 @@ class MarketService {
     required String resourceType,
     required double quantity,
   }) async {
-    await dio.post("/api/market/sell",data:{
-      "resourceType":resourceType,
-      "quantity":quantity,
+    await dio.post("/api/market/sell", data: {
+      "resourceType": resourceType,
+      "quantity": quantity,
     });
   }
 
   Future<List<MarketHistoryEntry>> getHistory() async {
     final res = await dio.get("/api/market/history");
-    return (res.data as List).map((e)=>MarketHistoryEntry.fromJson(e)).toList();
+    return (res.data as List)
+        .map((e) => MarketHistoryEntry.fromJson(e))
+        .toList();
   }
 
   Future<List<MarketTransport>> getTransports() async {
     final res = await dio.get("/api/market/transports");
-    return (res.data as List).map((e)=>MarketTransport.fromJson(e)).toList();
+    return (res.data as List).map((e) => MarketTransport.fromJson(e)).toList();
   }
 }
 
@@ -142,8 +146,8 @@ class PolicyService {
   }
 
   Future<void> chooseTaxPolicy(String optionId) async {
-    await dio.post("/api/policy/tax",data:{
-      "optionId":optionId,
+    await dio.post("/api/policy/tax", data: {
+      "optionId": optionId,
     });
   }
 
@@ -153,8 +157,8 @@ class PolicyService {
   }
 
   Future<void> chooseFoodPolicy(String optionId) async {
-    await dio.post("/api/policy/food",data:{
-      "optionId":optionId,
+    await dio.post("/api/policy/food", data: {
+      "optionId": optionId,
     });
   }
 
@@ -164,8 +168,8 @@ class PolicyService {
   }
 
   Future<void> chooseWorkPolicy(String optionId) async {
-    await dio.post("/api/policy/work",data:{
-      "optionId":optionId,
+    await dio.post("/api/policy/work", data: {
+      "optionId": optionId,
     });
   }
 }
@@ -175,7 +179,7 @@ class SessionService {
 
   Future<List<Session>> getSessions() async {
     final res = await api.dio.get("/api/sessions");
-    return (res.data as List).map((e)=>Session.fromJson(e)).toList();
+    return (res.data as List).map((e) => Session.fromJson(e)).toList();
   }
 
   Future<SessionJoinResponse> joinSession(String id) async {
@@ -183,8 +187,8 @@ class SessionService {
 
     final data = SessionJoinResponse.fromJson(res.data);
 
-    if(data.accessToken != null){
-      await api.storage.write(key:"token",value:data.accessToken);
+    if (data.accessToken != null) {
+      await api.storage.write(key: "token", value: data.accessToken);
     }
 
     return data;
@@ -196,8 +200,8 @@ class SessionService {
   }
 
   Future<Session> createSession(String name) async {
-    final res = await api.dio.post("/api/sessions",data:{
-      "name":name,
+    final res = await api.dio.post("/api/sessions", data: {
+      "name": name,
     });
 
     return Session.fromJson(res.data);
@@ -231,6 +235,6 @@ class RankingService {
 
   Future<List<RankingEntry>> getRanking() async {
     final res = await dio.get("/api/ranking");
-    return (res.data as List).map((e)=>RankingEntry.fromJson(e)).toList();
+    return (res.data as List).map((e) => RankingEntry.fromJson(e)).toList();
   }
 }

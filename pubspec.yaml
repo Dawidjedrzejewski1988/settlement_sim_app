@@ -19,6 +19,7 @@ dependencies:
   provider: ^6.1.1
   flutter_secure_storage: ^9.0.0
   retrofit: ^4.9.2
+  image: ^4.1.7
 
 dev_dependencies:
   flutter_test:
@@ -39,4 +40,4 @@ flutter:
     - assets/icons/
     - assets/icons/resources/
     - assets/icons/stats/
-    - assets/npc/
+    - assets/world/

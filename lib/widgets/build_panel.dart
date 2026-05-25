@@ -158,8 +158,7 @@ class _BuildPanelState extends State<BuildPanel> {
                   if (canBuild)
                     const Icon(Icons.arrow_forward_ios,
                         color: UiColors.gold, size: 16),
-                  if (!canBuild)
-                    const Icon(Icons.lock, color: Colors.red),
+                  if (!canBuild) const Icon(Icons.lock, color: Colors.red),
                 ],
               ),
               const SizedBox(height: 8),

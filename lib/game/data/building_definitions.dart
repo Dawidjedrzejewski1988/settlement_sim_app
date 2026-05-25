@@ -25,8 +25,8 @@ class BuildingDefinitions {
       height: 2,
       offsetX: 0,
       offsetY: 0,
-      spriteW: 220,
-      spriteH: 220,
+      spriteW: 150,
+      spriteH: 150,
     ),
 
     "Cottage": BuildingVisualData(
@@ -34,8 +34,8 @@ class BuildingDefinitions {
       height: 2,
       offsetX: 0,
       offsetY: 0,
-      spriteW: 200,
-      spriteH: 200,
+      spriteW: 135,
+      spriteH: 135,
     ),
 
     "LumberCamp": BuildingVisualData(
@@ -43,8 +43,8 @@ class BuildingDefinitions {
       height: 2,
       offsetX: 0,
       offsetY: 0,
-      spriteW: 230,
-      spriteH: 230,
+      spriteW: 155,
+      spriteH: 155,
     ),
 
     "GatherersCamp": BuildingVisualData(
@@ -52,8 +52,8 @@ class BuildingDefinitions {
       height: 2,
       offsetX: 0,
       offsetY: 0,
-      spriteW: 230,
-      spriteH: 230,
+      spriteW: 155,
+      spriteH: 155,
     ),
 
     "Warehouse": BuildingVisualData(
@@ -61,8 +61,8 @@ class BuildingDefinitions {
       height: 3,
       offsetX: 0,
       offsetY: 0,
-      spriteW: 320,
-      spriteH: 280,
+      spriteW: 230,
+      spriteH: 200,
     ),
 
     "Market": BuildingVisualData(
@@ -70,8 +70,8 @@ class BuildingDefinitions {
       height: 3,
       offsetX: 0,
       offsetY: 0,
-      spriteW: 320,
-      spriteH: 280,
+      spriteW: 230,
+      spriteH: 200,
     ),
 
     "Tavern": BuildingVisualData(
@@ -79,8 +79,8 @@ class BuildingDefinitions {
       height: 3,
       offsetX: 0,
       offsetY: 0,
-      spriteW: 320,
-      spriteH: 280,
+      spriteW: 230,
+      spriteH: 200,
     ),
 
     "Sawmill": BuildingVisualData(
@@ -88,8 +88,8 @@ class BuildingDefinitions {
       height: 2,
       offsetX: 0,
       offsetY: 0,
-      spriteW: 240,
-      spriteH: 220,
+      spriteW: 170,
+      spriteH: 155,
     ),
 
     "Quarry": BuildingVisualData(
@@ -97,8 +97,8 @@ class BuildingDefinitions {
       height: 2,
       offsetX: 0,
       offsetY: 0,
-      spriteW: 230,
-      spriteH: 220,
+      spriteW: 165,
+      spriteH: 155,
     ),
 
     "Farm": BuildingVisualData(
@@ -106,8 +106,8 @@ class BuildingDefinitions {
       height: 3,
       offsetX: 0,
       offsetY: 0,
-      spriteW: 320,
-      spriteH: 280,
+      spriteW: 240,
+      spriteH: 210,
     ),
 
     "Mill": BuildingVisualData(
@@ -115,8 +115,8 @@ class BuildingDefinitions {
       height: 2,
       offsetX: 0,
       offsetY: 0,
-      spriteW: 240,
-      spriteH: 240,
+      spriteW: 170,
+      spriteH: 170,
     ),
 
     "Bakery": BuildingVisualData(
@@ -124,8 +124,8 @@ class BuildingDefinitions {
       height: 2,
       offsetX: 0,
       offsetY: 0,
-      spriteW: 240,
-      spriteH: 240,
+      spriteW: 170,
+      spriteH: 170,
     ),
 
     "Workshop": BuildingVisualData(
@@ -133,8 +133,8 @@ class BuildingDefinitions {
       height: 2,
       offsetX: 0,
       offsetY: 0,
-      spriteW: 240,
-      spriteH: 240,
+      spriteW: 170,
+      spriteH: 170,
     ),
   };
 
@@ -147,8 +147,8 @@ class BuildingDefinitions {
           height: 2,
           offsetX: 0,
           offsetY: 0,
-          spriteW: 220,
-          spriteH: 220,
+          spriteW: 150,
+          spriteH: 150,
         );
   }
 }
